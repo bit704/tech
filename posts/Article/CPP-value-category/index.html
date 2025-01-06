@@ -1,0 +1,1173 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN-spec" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="https://bit704.oss-cn-beijing.aliyuncs.com/image/2023-10-17-logo.png">
+  <link rel="icon" href="https://bit704.oss-cn-beijing.aliyuncs.com/image/2023-10-17-logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="bit704">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="学习总结">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++值类别">
+<meta property="og:url" content="https://reddish.fun/posts/Article/CPP-value-category/index.html">
+<meta property="og:site_name" content="Homeworld">
+<meta property="og:description" content="学习总结">
+<meta property="og:locale">
+<meta property="article:published_time" content="2025-01-03T15:03:00.000Z">
+<meta property="article:author" content="bit704">
+<meta property="article:tag" content="CPP">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>C++值类别 - Homeworld</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"reddish.fun","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":50,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 65vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>逝者如斯夫！不舍昼夜。</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>联系我</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-link-fill"></i>
+                <span>更多</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/links/">
+                    
+                    <span>外部链接</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="https://reddish.fun/posts/Article/additional/">
+                    
+                    <span>一些说明</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://bit704.oss-cn-beijing.aliyuncs.com/image/2022-11-15-spaceplane.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++值类别"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-01-03 23:03" pubdate>
+          2025年1月3日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          16k 字
+        
+      </span>
+    
+
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">C++值类别</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>学习总结</p>
+<span id="more"></span>
+<blockquote>
+<p>测试环境：使用<em>GCC 13.2.0</em>和<em>MSVC
+1938（14.38.33130）</em>，基于<em>C++20</em>。若未显式说明，则表示代码在GCC和MSVC中均可编译（静态断言均成功）。</p>
+</blockquote>
+<h1 id="概述">概述</h1>
+<p>随着移动语义引入到C++11之中，C++的<strong>值类别</strong>被重新定义以区别表达式的两种独立的性质：</p>
+<ol type="1">
+<li><strong>拥有身份</strong>
+(identity)：可以确定表达式是否与另一表达式指代同一实体，例如通过比较它们所标识的对象或函数的（直接或间接获得的）地址。</li>
+<li><strong>可被移动</strong>：移动构造函数、移动赋值运算符或实现了移动语义的其他函数重载能够绑定于这个表达式。</li>
+</ol>
+<blockquote>
+<p>值类别是表达式的两种独立性质之一（另一种为类型），而非值的性质。</p>
+<p>例如，右值引用的名字构成的表达式是左值表达式。</p>
+</blockquote>
+<p>拥有身份的表达式被称作“<strong>泛左值</strong> (glvalue)
+表达式”。左值和亡值都是泛左值表达式。</p>
+<p>可被移动的表达式被称作“<strong>右值</strong> (rvalue)
+表达式”。纯右值和亡值都是右值表达式。</p>
+<p>拥有身份且不可被移动的表达式被称作“<strong>左值</strong>
+(lvalue) ﻿表达式”。</p>
+<p>拥有身份且可被移动的表达式被称作“<strong>亡值</strong>
+(xvalue) ﻿表达式”。</p>
+<p>不拥有身份且可被移动的表达式被称作“<strong>纯右值</strong>
+(prvalue) ﻿表达式”。</p>
+<p>不拥有身份且不可被移动的表达式无法使用，Bjarne
+Stroustrup（C++创始人）认为这种值<em>is not useful in C++ (or, I think)
+in any other
+language</em><sup id="fnref:6" class="footnote-ref"><a href="#fn:6" rel="footnote"><span
+class="hint--top hint--rounded"
+aria-label="[“New” Value Terminology - Bjarne Stroustrup](https://www.stroustrup.com/terminology.pdf)">[6]</span></a></sup>。</p>
+<p><img
+src="https://bit704.oss-cn-beijing.aliyuncs.com/image/2025-01-04-cpp-value-category.png" srcset="/img/loading.gif" lazyload /></p>
+<blockquote>
+<p>l-left，r-right，p-pure，x-expiring，g-generalized。</p>
+</blockquote>
+<p>泛左值是<strong>求值决定了一个对象或函数的身份
+(identity)</strong>的表达式，亡值是泛左值中为<strong>资源可被重复利用（即可被安全移动）的对象</strong>的那部分，左值则是泛左值中不是亡值的另外一部分。</p>
+<p>右值包含亡值和纯右值，纯右值包含<strong>计算内建运算符的操作数的值</strong>的表达式（无结果对象）和<strong>初始化对象</strong>的表达式（有结果对象）。</p>
+<p>测试值类别时使用的模板：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;type_traits&gt;</span></span><br> <br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_lvalue</span> : std::false_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_lvalue</span>&lt;T&amp;&gt; : std::true_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_lvalue</span>&lt;T&amp;&amp;&gt; : std::false_type &#123;&#125;;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_xvalue</span> : std::false_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_xvalue</span>&lt;T&amp;&gt; : std::false_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_xvalue</span>&lt;T&amp;&amp;&gt; : std::true_type &#123;&#125;;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_prvalue</span> : std::true_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_prvalue</span>&lt;T&amp;&gt; : std::false_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_prvalue</span>&lt;T&amp;&amp;&gt; : std::false_type &#123;&#125;;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">constexpr</span> <span class="hljs-type">bool</span> is_lvalue_v = is_lvalue&lt;T&gt;::value;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">constexpr</span> <span class="hljs-type">bool</span> is_xvalue_v = is_xvalue&lt;T&gt;::value;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">constexpr</span> <span class="hljs-type">bool</span> is_prvalue_v = is_prvalue&lt;T&gt;::value;<br></code></pre></td></tr></table></figure>
+<p>需要注意，使用上述模板时，应使用<code>decltype(())</code>而不是<code>decltype()</code>来正确判断表达式的类型。</p>
+<blockquote>
+<p><code>decltype()</code>和<code>decltype(())</code>的结果可能相同，也可能不同。</p>
+<p>如果对象的名字带有括号，那么它会被当做普通的左值表达式。</p>
+<p>详情可参见：<a
+target="_blank" rel="noopener" href="https://www.cnblogs.com/isharetech/p/18130921">深入解析decltype和decltype(auto)
+- iShare_爱分享 - 博客园</a></p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> i = <span class="hljs-number">1</span>;<br><span class="hljs-comment">// 区别</span><br><span class="hljs-keyword">decltype</span>(i) a;      <span class="hljs-comment">//ok: a is an (uninitialized) int</span><br><span class="hljs-comment">// decltype((i)) b;    //error: b is int&amp; and must be initialized</span><br><br><span class="hljs-comment">// 判断表达式的类型</span><br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>(i)&gt;);   <span class="hljs-comment">// 判断为纯右值表达式，错误</span><br><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((i))&gt;);  <span class="hljs-comment">// 判断为左值表达式，正确</span><br></code></pre></td></tr></table></figure>
+<h1 id="左值情形">左值情形</h1>
+<h2 id="左值情形1">左值情形1</h2>
+<p>变量、函数、数据成员、模板形参对象（C++20起）的名字。即使变量的类型是右值引用，由它的名字构成的表达式仍是左值表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">bar</span><span class="hljs-params">()</span> </span>&#123;&#125;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">foo</span> &#123;<br>    <span class="hljs-type">int</span> l = <span class="hljs-number">0</span>;<br>&#125;x;<br><br><span class="hljs-keyword">template</span> &lt;foo a&gt;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">run</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((a))&gt;); <span class="hljs-comment">// 模板形参对象</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">int</span> i = <span class="hljs-number">0</span>;<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((i))&gt;); <span class="hljs-comment">// 变量</span><br><br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((bar))&gt;); <span class="hljs-comment">// 函数</span><br><br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((x.l))&gt;); <span class="hljs-comment">// 数据成员</span><br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;utility&gt;</span></span><br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">foo</span> &#123;<br>    <span class="hljs-type">int</span> m = <span class="hljs-number">0</span>;<br>&#125;;<br><br>foo&amp;&amp; <span class="hljs-keyword">operator</span>+(foo, foo);<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br><br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-number">1</span> + <span class="hljs-number">2</span>))&gt;);<br><br>    foo a1;<br>    <span class="hljs-built_in">static_assert</span>(is_xvalue_v&lt;<span class="hljs-keyword">decltype</span>((a1 + a1))&gt;); <span class="hljs-comment">// 可重复利用</span><br>    <span class="hljs-built_in">static_assert</span>(is_xvalue_v&lt;<span class="hljs-keyword">decltype</span>((std::<span class="hljs-built_in">move</span>(a1)))&gt;); <span class="hljs-comment">// 可重复利用</span><br><br>    foo&amp;&amp; a2 = std::<span class="hljs-built_in">move</span>(a1);<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((a2))&gt;); <span class="hljs-comment">// 右值引用的名字构成的表达式，不可重复利用</span><br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形2">左值情形2</h2>
+<blockquote>
+<p>相关：<a href="#左值情形16">左值情形16</a>、<a
+href="#纯右值情形2">纯右值情形2</a>、<a
+href="#亡值情形5">亡值情形5</a></p>
+</blockquote>
+<p>返回类型是左值引用的函数调用或重载运算符表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-keyword">decltype</span>(<span class="hljs-keyword">auto</span>) <span class="hljs-title">dog</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">int</span> x = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">return</span> x;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">decltype</span>(<span class="hljs-keyword">auto</span>) <span class="hljs-title">cat</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">int</span> x = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">return</span> (x); <span class="hljs-comment">// 将造成引用空悬</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">dog</span>()))&gt;);<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">cat</span>()))&gt;);<br><br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((std::cout &lt;&lt; <span class="hljs-number">1</span>))&gt;);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形3">左值情形3</h2>
+<p>内建的赋值及复合赋值表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-type">int</span> a = <span class="hljs-number">0</span>, b = <span class="hljs-number">1</span>;<br><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((a = b))&gt;);<br><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((a += b))&gt;);<br><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((a %= b))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形4">左值情形4</h2>
+<p>内建的前置自增与前置自减表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> a = <span class="hljs-number">0</span>;<br><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((++a))&gt;);<br><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((--a))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形5">左值情形5</h2>
+<p>内建的间接寻址表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-type">int</span> a = <span class="hljs-number">0</span>;<br><span class="hljs-type">int</span> *p = &amp;a;<br><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((*p))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形6">左值情形6</h2>
+<p>内建的下标表达式<code>a[n]</code>或<code>n[a]</code>，除了<code>a[n]</code>中的操作数不为数组左值时（C++11起）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-type">int</span> array[] = &#123;<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>&#125;;<br><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((array[<span class="hljs-number">0</span>]))&gt;);<br><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-number">0</span>[array]))&gt;);<br><br><span class="hljs-comment">// 纯右值数组实现1</span><br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>(((<span class="hljs-type">int</span>[<span class="hljs-number">3</span>])&#123;<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>&#125;))&gt;); <span class="hljs-comment">// GCC可以编译，MSVC无法编译</span><br><br><span class="hljs-comment">// 纯右值数组实现2</span><br><span class="hljs-keyword">using</span> prvalue_array = <span class="hljs-type">int</span>[<span class="hljs-number">3</span>];<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((prvalue_array&#123;<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>&#125;))&gt;);<br><br><span class="hljs-comment">// 纯右值数组实现3</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-type">int</span> prvalue_array[<span class="hljs-number">3</span>];<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((prvalue_array&#123;<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>&#125;))&gt;);<br><br><span class="hljs-comment">// 纯右值数组实现4</span><br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((std::<span class="hljs-type">type_identity_t</span>&lt;<span class="hljs-type">int</span>[<span class="hljs-number">3</span>]&gt;&#123;<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>&#125;))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形7">左值情形7</h2>
+<blockquote>
+<p>相关：<a href="#纯右值情形8">纯右值情形8</a>、<a
+href="#亡值情形1">亡值情形1</a></p>
+</blockquote>
+<p>对象成员表达式<code>a.m</code>，除了3种情况：</p>
+<ol type="1">
+<li><code>m</code>是成员枚举项。</li>
+<li><code>m</code>是非静态成员函数。</li>
+<li><code>a</code>是右值而<code>m</code>是对象类型的非静态数据成员。</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">foo</span> &#123;<br>    <span class="hljs-type">int</span> m1 = <span class="hljs-number">0</span>;<br><br>    <span class="hljs-keyword">enum</span> <span class="hljs-title class_">bar1</span> &#123;<br>        m2 = <span class="hljs-number">5</span> <span class="hljs-comment">// 成员枚举项</span><br>    &#125;;<br><br>    <span class="hljs-type">static</span> <span class="hljs-type">int</span> m3;<br><br>    <span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">f1</span><span class="hljs-params">()</span> </span>&#123;&#125; <span class="hljs-comment">// 静态成员函数</span><br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">f2</span><span class="hljs-params">()</span> </span>&#123;&#125;        <span class="hljs-comment">// 非静态成员函数，有一个隐式形参this</span><br>&#125;;<br><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br><br>    <span class="hljs-comment">// 情况1</span><br>    foo a;<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((a.m1))&gt;);<br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((a.m2))&gt;);<br><br>    <span class="hljs-comment">// 情况2</span><br>    a.f1; <span class="hljs-comment">// 左值表达式</span><br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((a.f1))&gt;);<br><br>    <span class="hljs-comment">// a.f2; // MSVC与GCC均无法编译</span><br><br>    <span class="hljs-built_in">void</span> (*p11)() = &amp;foo::f1;<br>    <span class="hljs-built_in">void</span> (*p12)() = &amp;a.f1;<br><br>    <span class="hljs-built_in">void</span> (foo::*p21)() = &amp;foo::f2;<br>    <span class="hljs-built_in">void</span> (foo::*p22)() = &amp;a.f2; <span class="hljs-comment">// ill-formed，a2.f2是纯右值，不应取地址，GCC可以编译，MSVC无法编译</span><br>	<br>    <span class="hljs-comment">// 情况3</span><br>    <span class="hljs-built_in">static_assert</span>(is_xvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">foo</span>().m1))&gt;);<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">foo</span>().m3))&gt;);<br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形8">左值情形8</h2>
+<blockquote>
+<p>相关：<a href="#纯右值情形9">纯右值情形9</a></p>
+</blockquote>
+<p>内置的指针成员表达式<code>p-&gt;m</code>，除了2种情况：</p>
+<ol type="1">
+<li><code>m</code>是成员枚举项。</li>
+<li><code>m</code>是非静态成员函数。</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">foo</span> &#123;<br>    <span class="hljs-type">int</span> m1 = <span class="hljs-number">0</span>;<br><br>    <span class="hljs-keyword">enum</span> <span class="hljs-title class_">bar1</span> &#123;<br>        m2 = <span class="hljs-number">5</span> <span class="hljs-comment">// 成员枚举项</span><br>    &#125;;<br><br>    <span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">f1</span><span class="hljs-params">()</span> </span>&#123;&#125; <span class="hljs-comment">// 静态成员函数</span><br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">f2</span><span class="hljs-params">()</span> </span>&#123;&#125;        <span class="hljs-comment">// 非静态成员函数，有一个隐式形参this</span><br>&#125;;<br><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br><br>    <span class="hljs-comment">// 情况1</span><br>    foo *a = <span class="hljs-keyword">new</span> <span class="hljs-built_in">foo</span>();<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((a-&gt;m1))&gt;);<br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((a-&gt;m2))&gt;);<br><br>    <span class="hljs-comment">// 情况2</span><br>    a-&gt;f1; <span class="hljs-comment">// 左值表达式</span><br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((a-&gt;f1))&gt;);<br><br>    <span class="hljs-comment">// a-&gt;f2; // MSVC与GCC均无法编译</span><br><br>    <span class="hljs-built_in">void</span> (*p11)() = &amp;foo::f1;<br>    <span class="hljs-built_in">void</span> (*p12)() = &amp;a-&gt;f1;<br><br>    <span class="hljs-built_in">void</span> (foo::*p21)() = &amp;foo::f2;<br>    <span class="hljs-built_in">void</span> (foo::*p22)() = &amp;a-&gt;f2; <span class="hljs-comment">// ill-formed，a2-&gt;f2是纯右值，不应取地址，GCC可以编译，MSVC无法编译</span><br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形9">左值情形9</h2>
+<blockquote>
+<p>相关：<a href="#纯右值情形10">纯右值情形10</a>、<a
+href="#亡值情形2">亡值情形2</a></p>
+</blockquote>
+<p>对象的成员指针表达式<code>a.*mp</code>，其中<code>a</code>是左值且<code>mp</code>是数据成员指针。</p>
+<blockquote>
+<p><code>.*</code>运算符不可重载</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">foo</span> &#123;<br>    <span class="hljs-type">int</span> m = <span class="hljs-number">0</span>;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    foo a;<br>    <span class="hljs-type">int</span> foo::*p = &amp;foo::m;<br>    <br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((a.*p))&gt;);<br><br>    <span class="hljs-built_in">static_assert</span>(is_xvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">foo</span>().*p))&gt;); <span class="hljs-comment">// 仅GCC断言成功</span><br>    <span class="hljs-comment">// static_assert(is_prvalue_v&lt;decltype((foo().*p))&gt;); // 仅MSVC断言成功</span><br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形10">左值情形10</h2>
+<blockquote>
+<p>相关：<a href="#纯右值情形11">纯右值情形11</a></p>
+</blockquote>
+<p>内建的指针的成员指针表达式<code>p-&gt;*mp</code>，其中<code>mp</code>
+是数据成员指针。</p>
+<blockquote>
+<p>注意，<code>foo();</code>和<code>new foo();</code>中构造的对象的生命周期不同，前者构造的对象在表达式结束时被销毁，后者构造的对象会一直存在并造成内存泄漏。</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">foo</span> &#123;<br>    <span class="hljs-type">int</span> m = <span class="hljs-number">0</span>;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    foo *a = <span class="hljs-keyword">new</span> <span class="hljs-built_in">foo</span>();<br>    <span class="hljs-type">int</span> foo::*p = &amp;foo::m;<br>    <br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((a-&gt;*p))&gt;);<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>(((<span class="hljs-keyword">new</span> <span class="hljs-built_in">foo</span>())-&gt;*p))&gt;);<br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形11">左值情形11</h2>
+<blockquote>
+<p>相关：<a href="#纯右值情形12">纯右值情形12</a>、<a
+href="#亡值情形3">亡值情形3</a></p>
+</blockquote>
+<p>内建的逗号表达式<code>a, b</code>，其中<code>b</code>是左值。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> a = <span class="hljs-number">0</span>;<br><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-number">0</span>, a))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形12">*左值情形12</h2>
+<blockquote>
+<p>相关：<a href="#纯右值情形13">纯右值情形13</a>、<a
+href="#亡值情形4">亡值情形4</a></p>
+</blockquote>
+<p>三元表达式<code>a ? b : c</code>中<code>b</code>和<code>c</code>满足某些条件时，其为左值。</p>
+<blockquote>
+<p>这条规则相当复杂，参见cppreference中的<a
+target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/operator_other#.E6.9D.A1.E4.BB.B6.E8.BF.90.E7.AE.97.E7.AC.A6">条件运算符条目</a>。</p>
+</blockquote>
+<h2 id="左值情形13">左值情形13</h2>
+<p>字符串字面量。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-string">&quot;go&quot;</span>))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形14">左值情形14</h2>
+<blockquote>
+<p><a href="#左值情形17">左值情形17</a>、<a
+href="#纯右值情形14">纯右值情形14</a>、<a
+href="#亡值情形7">亡值情形7</a></p>
+</blockquote>
+<p>转换到左值引用类型的转型表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">foo</span><span class="hljs-params">(<span class="hljs-type">int</span> a)</span> </span>&#123;<br>   <span class="hljs-keyword">return</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">int</span> x = <span class="hljs-number">0</span>;<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">static_cast</span>&lt;<span class="hljs-type">int</span>&amp;&gt;(x)))&gt;);<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">static_cast</span>&lt;<span class="hljs-built_in">void</span>(&amp;)(<span class="hljs-type">int</span>)&gt;(foo)))&gt;);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形15">左值情形15</h2>
+<p>具有左值引用类型的非类型模板形参。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">template</span> &lt;<span class="hljs-type">int</span>&amp; v&gt;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">set</span><span class="hljs-params">()</span> </span>&#123;<br>   <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((v))&gt;);<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形16">左值情形16</h2>
+<blockquote>
+<p>相关：<a href="#左值情形2">左值情形2</a>、<a
+href="#纯右值情形2">纯右值情形2</a>、<a
+href="#亡值情形5">亡值情形5</a></p>
+</blockquote>
+<p>返回类型是到函数的右值引用的函数调用表达式或重载的运算符表达式（C++11起）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;type_traits&gt;</span></span><br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_lvalue</span> : std::false_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_lvalue</span>&lt;T&amp;&gt; : std::true_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_lvalue</span>&lt;T&amp;&amp;&gt; : std::false_type &#123;&#125;;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_xvalue</span> : std::false_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_xvalue</span>&lt;T&amp;&gt; : std::false_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_xvalue</span>&lt;T&amp;&amp;&gt; : std::true_type &#123;&#125;;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_prvalue</span> : std::true_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_prvalue</span>&lt;T&amp;&gt; : std::false_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_prvalue</span>&lt;T&amp;&amp;&gt; : std::false_type &#123;&#125;;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">constexpr</span> <span class="hljs-type">bool</span> is_lvalue_v = is_lvalue&lt;T&gt;::value;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">constexpr</span> <span class="hljs-type">bool</span> is_xvalue_v = is_xvalue&lt;T&gt;::value;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">constexpr</span> <span class="hljs-type">bool</span> is_prvalue_v = is_prvalue&lt;T&gt;::value;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">test</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-built_in">int</span> (*<span class="hljs-built_in">get_test1</span>())(<span class="hljs-type">int</span>) &#123;<br>   <span class="hljs-keyword">return</span> test;<br>&#125;<br><br><span class="hljs-built_in">int</span> (&amp;<span class="hljs-built_in">get_test2</span>())(<span class="hljs-type">int</span>) &#123;<br>   <span class="hljs-keyword">return</span> test;<br>&#125;<br><br><span class="hljs-built_in">int</span> (&amp;&amp;<span class="hljs-built_in">get_test3</span>())(<span class="hljs-type">int</span>) &#123;<br>   <span class="hljs-keyword">return</span> test;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">get_test1</span>()))&gt;);<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">get_test2</span>()))&gt;);<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">get_test3</span>()))&gt;); <span class="hljs-comment">// 仅GCC断言成功</span><br>    <span class="hljs-comment">// static_assert(is_xvalue_v&lt;decltype((get_test3()))&gt;); // 仅MSVC断言成功</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="左值情形17">左值情形17</h2>
+<blockquote>
+<p><a href="#左值情形14">左值情形14</a>、<a
+href="#纯右值情形14">纯右值情形14</a>、<a
+href="#亡值情形7">亡值情形7</a></p>
+</blockquote>
+<p>转换到函数的右值引用类型的转型表达式（C++11起）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">test</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">static_cast</span>&lt;<span class="hljs-built_in">int</span> (&amp;&amp;)(<span class="hljs-type">int</span>)&gt;(test)))&gt;);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h1 id="纯右值情形">纯右值情形</h1>
+<h2 id="纯右值情形1">纯右值情形1</h2>
+<p>除了字符串字面量之外的字面量。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-number">42</span>))&gt;);<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-literal">true</span>))&gt;);<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-literal">nullptr</span>))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形2">纯右值情形2</h2>
+<blockquote>
+<p>相关：<a href="#左值情形16">左值情形16</a>、<a
+href="#左值情形16">左值情形16</a>、<a
+href="#亡值情形5">亡值情形5</a></p>
+</blockquote>
+<p>返回类型是非引用的函数调用或重载运算符表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C++">std::string str = <span class="hljs-string">&quot;hello&quot;</span>;<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((str.<span class="hljs-built_in">substr</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形3">纯右值情形3</h2>
+<p>内建的后置自增与后置自减表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> x = <span class="hljs-number">0</span>;<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((x--))&gt;);<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((x++))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形4">纯右值情形4</h2>
+<p>内建的算术表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-type">int</span> x = <span class="hljs-number">0</span>;<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((x + x))&gt;);<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((x % x))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形5">纯右值情形5</h2>
+<p>内建的逻辑表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-type">bool</span> a = <span class="hljs-literal">true</span>, b = <span class="hljs-literal">false</span>;<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((a || b))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形6">纯右值情形6</h2>
+<p>内建的比较表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-type">int</span> a = <span class="hljs-number">1</span>, b = <span class="hljs-number">0</span>;<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((a &gt; b))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形7">纯右值情形7</h2>
+<p>内建的取地址表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> a = <span class="hljs-number">1</span>;<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((&amp;a))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形8">纯右值情形8</h2>
+<blockquote>
+<p>相关：<a href="#左值情形7">左值情形7</a>、<a
+href="#亡值情形1">亡值情形1</a></p>
+</blockquote>
+<p>对象成员表达式<code>a.m</code>：</p>
+<ol type="1">
+<li><code>m</code>是成员枚举项。</li>
+<li><code>m</code>是非静态成员函数。</li>
+</ol>
+<h2 id="纯右值情形9">纯右值情形9</h2>
+<blockquote>
+<p>相关：<a href="#左值情形8">左值情形8</a></p>
+</blockquote>
+<p>内置的指针成员表达式<code>p-&gt;m</code>：</p>
+<ol type="1">
+<li><code>m</code>是成员枚举项。</li>
+<li><code>m</code>是非静态成员函数。</li>
+</ol>
+<h2 id="纯右值情形10">纯右值情形10</h2>
+<blockquote>
+<p>相关：<a href="#左值情形9">左值情形9</a>，<a
+href="#亡值情形2">亡值情形2</a></p>
+</blockquote>
+<p>对象的成员指针表达式<code>a.*mp</code>，其中<code>mp</code>
+是成员函数指针。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">foo</span> &#123;<br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">m</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>    &#125;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    foo a;<br>    <span class="hljs-built_in">int</span> (foo::*p)() = &amp;foo::m;<br>    <br>    <span class="hljs-comment">// 以下代码GCC可以编译，MSVC无法编译（C2298：指向成员函数表达式的指针必须调用成员函数）</span><br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((a.*p))&gt;);<br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">foo</span>().*p))&gt;);<br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形11">纯右值情形11</h2>
+<blockquote>
+<p>相关：<a href="#左值情形10">左值情形10</a></p>
+</blockquote>
+<p>内建的指针的成员指针表达式<code>p-&gt;*mp</code>，其中<code>mp</code>
+是成员函数指针。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">foo</span> &#123;<br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">m</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>    &#125;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    foo *a = <span class="hljs-keyword">new</span> <span class="hljs-built_in">foo</span>();<br>    <span class="hljs-built_in">int</span> (foo::*p)() = &amp;foo::m;<br>    <br>    <span class="hljs-comment">// 以下代码GCC可以编译，MSVC无法编译（C2298：指向成员函数表达式的指针必须调用成员函数）</span><br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((a-&gt;*p))&gt;);<br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>(((<span class="hljs-keyword">new</span> <span class="hljs-built_in">foo</span>())-&gt;*p))&gt;);<br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形12">纯右值情形12</h2>
+<blockquote>
+<p>相关：<a href="#左值情形11">左值情形11</a>、<a
+href="#亡值情形3">亡值情形3</a></p>
+</blockquote>
+<p>内建的逗号表达式<code>a, b</code>，其中<code>b</code>是纯右值。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> a = <span class="hljs-number">0</span>;<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((a, <span class="hljs-number">0</span>))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形13">*纯右值情形13</h2>
+<blockquote>
+<p>相关：<a href="#左值情形12">左值情形12</a>，<a
+href="#亡值情形4">亡值情形4</a></p>
+</blockquote>
+<p>三元表达式<code>a ? b : c</code>中<code>b</code>和<code>c</code>满足某些条件时，其为纯右值。</p>
+<h2 id="纯右值情形14">纯右值情形14</h2>
+<blockquote>
+<p><a href="#左值情形14">左值情形14</a>、<a
+href="#左值情形17">左值情形17</a>、<a
+href="#亡值情形7">亡值情形7</a></p>
+</blockquote>
+<p>转换到非引用类型的转型表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> a = <span class="hljs-number">0</span>;<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">static_cast</span>&lt;<span class="hljs-type">double</span>&gt;(a)))&gt;);<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((std::string&#123;&#125;))&gt;);<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>(((<span class="hljs-type">int</span>)<span class="hljs-number">42</span>))&gt;);<br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">int</span>(<span class="hljs-number">42</span>)))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形15">纯右值情形15</h2>
+<p><code>this</code>指针。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">foo</span> &#123;<br>    <span class="hljs-built_in">foo</span>() &#123;<br>        <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-keyword">this</span>))&gt;);<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形16">纯右值情形16</h2>
+<p>枚举项。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-keyword">enum class</span> <span class="hljs-title class_">Color</span> &#123;<br>    Red,<br>    Green,<br>    Blue<br>&#125;;<br><br><span class="hljs-keyword">enum</span> <span class="hljs-title class_">Fruit</span> &#123;<br>    Apple,<br>    Orange,<br>    Banana<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">// 仅GCC断言成功</span><br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((Color::Red))&gt;);<br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((Apple))&gt;);<br>    <span class="hljs-comment">// 仅MSVC断言成功</span><br>    <span class="hljs-comment">// static_assert(is_lvalue_v&lt;decltype((Color::Red))&gt;);</span><br>    <span class="hljs-comment">// static_assert(is_lvalue_v&lt;decltype((Apple))&gt;);</span><br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形17">纯右值情形17</h2>
+<p>具有标量类型（scalar type）的非类型模板形参。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">template</span> &lt;<span class="hljs-type">int</span> v&gt;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">foo</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">// v不是左值，v是标量类型int的模板形参，是纯右值</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">int</span>* a = &amp;v; <span class="hljs-comment">// ill-formed，GCC中无法编译，MSVC中可以编译</span><br>    v = <span class="hljs-number">3</span>; <span class="hljs-comment">// ill-formed</span><br><br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((v))&gt;);<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形18">纯右值情形18</h2>
+<p>lambda 表达式（C++11起）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>(([](<span class="hljs-type">int</span> x)&#123; <span class="hljs-keyword">return</span> x * x; &#125;))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="纯右值情形19">纯右值情形19</h2>
+<p>requires表达式，concept的特化（C++20起）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;type_traits&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;concepts&gt;</span></span><br><br><span class="hljs-comment">// 检查类型T是否支持乘法操作，并且结果可以转换为T类型。</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">concept</span> Squarable = <span class="hljs-built_in">requires</span>(T x) &#123;<br>    &#123; x * x &#125; -&gt; std::convertible_to&lt;T&gt;;<br>&#125;;<br><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-built_in">static_assert</span>(Squarable&lt;<span class="hljs-type">int</span>&gt;, <span class="hljs-string">&quot;int should be squarable&quot;</span>);<br>    <span class="hljs-built_in">static_assert</span>(!Squarable&lt;<span class="hljs-type">void</span>&gt;, <span class="hljs-string">&quot;void should not be squarable&quot;</span>);<br><br>    <span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((Squarable&lt;<span class="hljs-type">int</span>&gt;))&gt;); <span class="hljs-comment">// 仅GCC断言成功</span><br>    <span class="hljs-comment">// static_assert(is_lvalue_v&lt;decltype((Squarable&lt;int&gt;))&gt;); // 仅MSVC断言成功</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h1 id="亡值情形">亡值情形</h1>
+<h2 id="亡值情形1">亡值情形1</h2>
+<blockquote>
+<p>相关：<a href="#左值情形7">左值情形7</a>、<a
+href="#纯右值情形8">纯右值情形8</a></p>
+</blockquote>
+<p>对象成员表达式<code>a.m</code>：</p>
+<ol type="1">
+<li><code>a</code>是右值而<code>m</code>是对象类型的非静态数据成员。</li>
+</ol>
+<p>即左值的情形7的情况3。</p>
+<h2 id="亡值情形2">亡值情形2</h2>
+<blockquote>
+<p>相关：<a href="#左值情形9">左值情形9</a>、<a
+href="#纯右值情形10">纯右值情形10</a></p>
+</blockquote>
+<p>对象的成员指针表达式<code>a.*mp</code>，其中<code>a</code>是右值且<code>mp</code>是数据成员指针。</p>
+<h2 id="亡值情形3">亡值情形3</h2>
+<blockquote>
+<p>相关：<a href="#左值情形11">左值情形11</a>、<a
+href="#纯右值情形12">纯右值情形12</a></p>
+</blockquote>
+<p>内建的逗号表达式<code>a, b</code>，其中<code>b</code>是亡值。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> a = <span class="hljs-number">0</span>;<br><span class="hljs-built_in">static_assert</span>(is_xvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-number">0</span>, std::<span class="hljs-built_in">move</span>(a)))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="亡值情形4">*亡值情形4</h2>
+<blockquote>
+<p>相关：<a href="#左值情形12">左值情形12</a>、<a
+href="#纯右值情形13">纯右值情形13</a></p>
+</blockquote>
+<p>三元表达式<code>a ? b : c</code>中<code>b</code>和<code>c</code>满足某些条件时，其为亡值。</p>
+<h2 id="亡值情形5">亡值情形5</h2>
+<blockquote>
+<p>相关：<a href="#左值情形2">左值情形2</a>、<a
+href="#左值情形16">左值情形16</a>、<a
+href="#纯右值情形2">纯右值情形2</a></p>
+</blockquote>
+<p>返回类型是对象的右值引用的函数调用或重载运算符表达式（C++11起）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> a = <span class="hljs-number">0</span>;<br><span class="hljs-built_in">static_assert</span>(is_xvalue_v&lt;<span class="hljs-keyword">decltype</span>((std::<span class="hljs-built_in">move</span>(a)))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="亡值情形6">亡值情形6</h2>
+<blockquote>
+<p>相关：<a href="#左值情形6">左值情形6</a></p>
+</blockquote>
+<p>内建的下标表达式<code>a[n]</code>，当它的操作数之一是数组右值时（C++11起）。</p>
+<h2 id="亡值情形7">亡值情形7</h2>
+<blockquote>
+<p>相关：<a href="#左值情形14">左值情形14</a>、<a
+href="#左值情形17">左值情形17</a>、<a
+href="#纯右值情形14">纯右值情形14</a></p>
+</blockquote>
+<p>转换到对象的右值引用类型的类型转换表达式（C++11起）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> a = <span class="hljs-number">0</span>;<br><span class="hljs-built_in">static_assert</span>(is_xvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">static_cast</span>&lt;<span class="hljs-type">int</span>&amp;&amp;&gt;(a)))&gt;);<br></code></pre></td></tr></table></figure>
+<h2 id="亡值情形8">亡值情形8</h2>
+<p>在<strong>临时量实质化</strong>后，任何指代该临时对象的表达式。（C++17起）</p>
+<p>临时量实质化，即任何完整类型<code>T</code>的纯右值，可转换成同类型<code>T</code>的亡值。此转换以该纯右值初始化一个<code>T</code>类型的临时对象（以临时对象作为求值该纯右值的结果对象），并产生一个代表该临时对象的亡值。如果<code>T</code>是类类型或类类型的数组，那么它必须有可访问且未被弃置的析构函数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">S</span> &#123; <span class="hljs-type">int</span> m; &#125;;<br><span class="hljs-type">int</span> k = <span class="hljs-built_in">S</span>().m; <span class="hljs-comment">// C++17起成员访问期待泛左值，S()纯右值被转换成亡值</span><br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">S</span>()))&gt;);<br><span class="hljs-built_in">static_assert</span>(is_xvalue_v&lt;<span class="hljs-keyword">decltype</span>((<span class="hljs-built_in">S</span>().m))&gt;);<br></code></pre></td></tr></table></figure>
+<p>临时量实质化在下例情况下发生：</p>
+<ol type="1">
+<li>绑定引用到纯右值时。</li>
+<li>访问类纯右值的数据成员时。</li>
+<li>调用类纯右值的隐式对象成员函数时。</li>
+<li>进行数组到指针转换或在数组纯右值上使用下标时。</li>
+<li>以花括号初始化器列表初始化<code>std::initializer_list&lt;T&gt;</code>类型的对象时。</li>
+<li>纯右值作为弃值表达式时。</li>
+</ol>
+<p>临时量实质化在从纯右值初始化同类型对象（由直接初始化或复制初始化）时不会发生：这种对象直接从初始化器初始化。这确保了“受保证的<strong>复制消除</strong>”。</p>
+<h2 id="亡值情形9">亡值情形9</h2>
+<p>虽然如<a
+href="#左值情形1">左值情形1</a>所说，由任何变量的名字构成的表达式是左值表达式，但若它作为：</p>
+<ol type="1">
+<li>return 语句</li>
+<li>co_return语句 (C++20 起)</li>
+<li>throw表达式 (C++17 起)</li>
+</ol>
+<p>的操作数出现，则表达式具有<strong>移动资格</strong>。</p>
+<p>有移动资格的表达式在在重载决议时被视为亡值（C++23起）。C++23前，被视为左值或右值。</p>
+<h1 id="值类别的性质">值类别的性质</h1>
+<p><img
+src="https://bit704.oss-cn-beijing.aliyuncs.com/image/2025-01-04-cpp-value-category.png" srcset="/img/loading.gif" lazyload /></p>
+<h2 id="泛左值">泛左值</h2>
+<ol type="1">
+<li><p>可以通过左值到右值、数组到指针或函数到指针<strong>隐式转换</strong>转换成纯右值。</p></li>
+<li><p>可以是<strong>多态</strong>的：它标识的对象的动态类型不必是该表达式的静态类型。</p></li>
+<li><p>可以具有不完整类型，只要表达式中容许。</p></li>
+</ol>
+<h2 id="右值">右值</h2>
+<ol type="1">
+<li><strong>不能由内建的取址运算符取地址</strong>：<code>&amp;int()</code>、<code>&amp;i++[3]</code>、<code>&amp;42</code>
+、<code>&amp;std::move(x)</code>是非法的。</li>
+<li>不能用作内建赋值运算符及内建复合赋值运算符的左操作数。</li>
+<li>可以用来初始化<code>const</code>左值引用，这种情况下该右值所标识的对象的<strong>生存期</strong>被延长到该引用的作用域结尾。</li>
+<li>可以用来初始化右值引用，这种情况下该右值所标识的对象的生存期被延长到该引用的作用域结尾。（C++11起）</li>
+<li>当被用作函数实参且该函数有两种重载可用，其中之一接受右值引用的形参而另一个接受<code>const</code>的左值引用的形参时，<strong>右值将被绑定到右值引用的重载之上</strong>（从而，当复制与移动构造函数均可用时，以右值实参将调用它的移动构造函数，复制和移动赋值运算符与此类似）。（C++11起）</li>
+</ol>
+<h2 id="左值">左值</h2>
+<ol type="1">
+<li>与泛左值相同。</li>
+<li><strong>可以通过内建的取址运算符取左值的地址</strong>：<code>&amp;++i</code>（假设<code>i</code>具有内建类型，或者它的前置自增运算符被重载为返回左值引用）及<code>&amp;std::endl</code>是合法表达式。</li>
+<li>可修改的左值可用作内建赋值和内建复合赋值运算符的<strong>左操作数</strong>。</li>
+<li>可以用来<strong>初始化左值引用</strong>，这会将新名字关联给该表达式所标识的对象。</li>
+</ol>
+<h2 id="纯右值">纯右值</h2>
+<ol type="1">
+<li>与右值相同。</li>
+<li><strong>不具有多态</strong>：它所标识的对象的动态类型始终是该表达式的类型。</li>
+<li>非类非数组的纯右值不能有cv限定，【除非它被实质化以绑定到cv限定类型的引用（C++17起）】。（注意：函数调用或转型表达式可能生成非类的cv限定类型的纯右值，但它的cv限定符通常被立即剥除）</li>
+<li>不能具有不完整类型（除了类型<code>void</code>，或在<code>decltype</code>说明符中使用之外）。</li>
+<li>不能具有抽象类类型或它的数组类型。</li>
+</ol>
+<h2 id="亡值">亡值</h2>
+<ol type="1">
+<li><p>与右值相同。</p></li>
+<li><p>与泛左值相同。</p></li>
+<li><p>与所有的右值类似，亡值可以绑定到右值引用上；并且与所有的泛左值类似，亡值可以是多态的，而且非类的亡值可以有cv限定。</p></li>
+</ol>
+<h1 id="特殊类别">特殊类别</h1>
+<h2 id="位域">位域</h2>
+<p>代表某个位域的表达式（例如<code>a.m</code>，其中<code>a</code>是类型<code>struct A &#123; int m: 3; &#125;</code>的左值）是泛左值表达式：它可用作赋值运算符的左操作数，但它<strong>不能被取地址</strong>，并且非<code>const</code>的左值引用不能绑定于它。const左值引用或右值引用可以从位域泛左值初始化，但这会制造位域的临时副本：它不会直接绑定到位域。</p>
+<h2 id="void表达式"><code>void</code>表达式</h2>
+<p>返回<code>void</code>的函数调用表达式，转换到<code>void</code>的转型表达式，以及<code>throw</code>表达式，被归类为纯右值表达式，但它们不能用来初始化引用或者作为函数实参。它们可以用在舍弃值的语境（例如自成一行，作为逗号运算符的左操作数等）和返回<code>void</code>的函数中的<code>return</code>语句中。另外，<code>throw</code>表达式可用作条件运算符<code>?:</code>的第二个和第三个操作数。</p>
+<h2 id="未决成员函数调用">未决成员函数调用</h2>
+<p>表达式<code>a.mf</code>与<code>p-&gt;mf</code>（其中<code>mf</code>是非静态成员函数）和表达式<code>a.*pmf</code>与<code>p-&gt;*pmf</code>（其中<code>pmf</code>是成员函数指针）被归类为纯右值表达式，但它们不能用来初始化引用，作为函数实参，或者用于除了作为函数调用运算符的左操作数（例如<code>(p-&gt;*pmf)(args))</code>以外的任何目的。</p>
+<h1 id="参考资料">参考资料</h1>
+<section class="footnotes">
+<div class="footnote-list">
+<ol>
+<li>
+<span id="fn:1" class="footnote-text"><span><a
+target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/value_category">Value
+categories - cppreference.com</a>
+<a href="#fnref:1" rev="footnote" class="footnote-backref">
+↩︎</a></span></span>
+</li>
+<li>
+<span id="fn:2" class="footnote-text"><span><a
+target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/decltype">decltype
+specifier (since C++11) - cppreference.com</a>
+<a href="#fnref:2" rev="footnote" class="footnote-backref">
+↩︎</a></span></span>
+</li>
+<li>
+<span id="fn:3" class="footnote-text"><span><a
+target="_blank" rel="noopener" href="https://www.cnblogs.com/isharetech/p/18130921">深入解析decltype和decltype(auto)
+- iShare_爱分享 - 博客园</a>
+<a href="#fnref:3" rev="footnote" class="footnote-backref">
+↩︎</a></span></span>
+</li>
+<li>
+<span id="fn:4"
+class="footnote-text"><span><a target="_blank" rel="noopener" href="https://nihil.cc/posts/cpp_lvalue_rvalue/">[C++]
+深入了解左值与右值 | Nihil</a>
+<a href="#fnref:4" rev="footnote" class="footnote-backref">
+↩︎</a></span></span>
+</li>
+<li>
+<span id="fn:5"
+class="footnote-text"><span><a target="_blank" rel="noopener" href="https://eel.is/c++draft/basic.lval">[basic.lval]
+7.2.1 Value category</a>
+<a href="#fnref:5" rev="footnote" class="footnote-backref">
+↩︎</a></span></span>
+</li>
+<li>
+<span id="fn:6"
+class="footnote-text"><span><a target="_blank" rel="noopener" href="https://www.stroustrup.com/terminology.pdf">“New”
+Value Terminology - Bjarne Stroustrup</a>
+<a href="#fnref:6" rev="footnote" class="footnote-backref">
+↩︎</a></span></span>
+</li>
+</ol>
+</div>
+</section>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Article/" class="category-chain-item">Article</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/CPP/">#CPP</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++值类别</div>
+      <div>https://reddish.fun/posts/Article/CPP-value-category/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>bit704</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年1月3日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/posts/Log/UFSH2024-ATTENDEE/" title="UFSH2024参与记录">
+                        <span class="hidden-mobile">UFSH2024参与记录</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <br> 欢迎光临 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.2/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
