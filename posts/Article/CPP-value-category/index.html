@@ -254,7 +254,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          15k 字
+          16k 字
         
       </span>
     
@@ -313,8 +313,9 @@
 <li><strong>可被移动</strong>：移动构造函数、移动赋值运算符或实现了移动语义的其他函数重载能够绑定于这个表达式。</li>
 </ol>
 <blockquote>
-<p>值类别是表达式的两种独立性质之一（另一种为类型），而非值的性质。</p>
-<p>例如，右值引用的名字构成的表达式是左值表达式。</p>
+<p>表达式是运算符 ﻿和它们的操作数 ﻿的序列，其指定一项计算。值类别是<strong>表达式的性质</strong>。</p>
+<p>例如，类型为右值引用的变量的名字构成的表达式是左值表达式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-type">int</span> a&#123;<span class="hljs-number">5</span>&#125;;<br><span class="hljs-type">int</span>&amp;&amp; b&#123;std::<span class="hljs-built_in">move</span>(a)&#125;; <span class="hljs-comment">// 变量`b`的类型是右值引用，表达式`b`的值类别是左值。</span><br></code></pre></td></tr></table></figure>
 </blockquote>
 <p>拥有身份的表达式被称作“<strong>泛左值</strong> (glvalue)
 表达式”。左值和亡值都是泛左值表达式。</p>
@@ -337,17 +338,25 @@ src="https://bit704.oss-cn-beijing.aliyuncs.com/image/2025-01-04-cpp-value-categ
 <blockquote>
 <p>l-left，r-right，p-pure，x-expiring，g-generalized。</p>
 </blockquote>
-<p>测试值类别时使用的模板：</p>
+<p>判断值类别时使用的模板<sup id="fnref:1" class="footnote-ref"><a href="#fn:1" rel="footnote"><span
+class="hint--top hint--rounded"
+aria-label="[Value categories - cppreference.com](https://en.cppreference.com/w/cpp/language/value_category)">[1]</span></a></sup>：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;type_traits&gt;</span></span><br> <br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_lvalue</span> : std::false_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_lvalue</span>&lt;T&amp;&gt; : std::true_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_lvalue</span>&lt;T&amp;&amp;&gt; : std::false_type &#123;&#125;;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_xvalue</span> : std::false_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_xvalue</span>&lt;T&amp;&gt; : std::false_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_xvalue</span>&lt;T&amp;&amp;&gt; : std::true_type &#123;&#125;;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_prvalue</span> : std::true_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_prvalue</span>&lt;T&amp;&gt; : std::false_type &#123;&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">struct</span> <span class="hljs-title class_">is_prvalue</span>&lt;T&amp;&amp;&gt; : std::false_type &#123;&#125;;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">constexpr</span> <span class="hljs-type">bool</span> is_lvalue_v = is_lvalue&lt;T&gt;::value;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">constexpr</span> <span class="hljs-type">bool</span> is_xvalue_v = is_xvalue&lt;T&gt;::value;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">class</span> <span class="hljs-title class_">T</span>&gt; <span class="hljs-keyword">constexpr</span> <span class="hljs-type">bool</span> is_prvalue_v = is_prvalue&lt;T&gt;::value;<br></code></pre></td></tr></table></figure>
-<p>需要注意，使用上述模板时，应使用<code>decltype(())</code>而不是<code>decltype()</code>来正确判断表达式的类型。</p>
+<p>观察可知，将求值类型是<strong>左值引用</strong>的表达式判断为<strong>左值表达式</strong>；将求值类型是<strong>右值引用</strong>的表达式判断为<strong>亡值表达式</strong>；将求值类型是<strong>非引用</strong>的表达式判断为<strong>纯右值表达式</strong>。</p>
+<p>使用上述模板时，应配合使用<strong><code>decltype((expr))</code></strong>而不是<code>decltype(expr)</code>来正确判断表达式的性质（两者可能相同也可能不同<sup id="fnref:3" class="footnote-ref"><a href="#fn:3" rel="footnote"><span
+class="hint--top hint--rounded"
+aria-label="[深入解析decltype和decltype(auto) - iShare\_爱分享 - 博客园](https://www.cnblogs.com/isharetech/p/18130921)">[3]</span></a></sup>）。例如，当expr是单变量时，只有把变量的名字用一个或更多个<code>()</code>包围时，编译器才会把操作数作为表达式求值：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> i = <span class="hljs-number">1</span>;<br><span class="hljs-comment">// 区别</span><br><span class="hljs-keyword">decltype</span>(i) a;      <span class="hljs-comment">//ok: a is an (uninitialized) int</span><br><span class="hljs-comment">// decltype((i)) b;    //error: b is int&amp; and must be initialized</span><br><br><span class="hljs-comment">// 判断表达式的值类别</span><br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>(i)&gt;);   <span class="hljs-comment">// 判断为纯右值表达式，错误</span><br><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((i))&gt;);  <span class="hljs-comment">// 判断为左值表达式，正确</span><br></code></pre></td></tr></table></figure>
 <blockquote>
-<p><code>decltype()</code>和<code>decltype(())</code>的结果可能相同，也可能不同。</p>
-<p>如果对象的名字带有括号，那么它会被当做普通的左值表达式。</p>
-<p>详情可参见：<a
-target="_blank" rel="noopener" href="https://www.cnblogs.com/isharetech/p/18130921">深入解析decltype和decltype(auto)
-- iShare_爱分享 - 博客园</a></p>
+<p>If we wrap the variable’s name in one or more sets of parentheses,
+the compiler will evaluate the operand as an expression. A variable is
+an expression that can be the left-hand side of an assignment. As a
+result, decltype on such an expression yields a reference.</p>
+<p>——C++ primer 5th edition，2.5 Dealing with types，decltype and
+reference<sup id="fnref:7" class="footnote-ref"><a href="#fn:7" rel="footnote"><span
+class="hint--top hint--rounded"
+aria-label="[C++ decltype((i))为什么是个引用？ - SegmentFault 思否](https://segmentfault.com/q/1010000000516149)">[7]</span></a></sup></p>
 </blockquote>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> i = <span class="hljs-number">1</span>;<br><span class="hljs-comment">// 区别</span><br><span class="hljs-keyword">decltype</span>(i) a;      <span class="hljs-comment">//ok: a is an (uninitialized) int</span><br><span class="hljs-comment">// decltype((i)) b;    //error: b is int&amp; and must be initialized</span><br><br><span class="hljs-comment">// 判断表达式的类型</span><br><span class="hljs-built_in">static_assert</span>(is_prvalue_v&lt;<span class="hljs-keyword">decltype</span>(i)&gt;);   <span class="hljs-comment">// 判断为纯右值表达式，错误</span><br><span class="hljs-built_in">static_assert</span>(is_lvalue_v&lt;<span class="hljs-keyword">decltype</span>((i))&gt;);  <span class="hljs-comment">// 判断为左值表达式，正确</span><br></code></pre></td></tr></table></figure>
 <h1 id="左值情形">左值情形</h1>
 <h2 id="左值情形1">左值情形1</h2>
 <p>变量、函数、数据成员、模板形参对象（C++20起）的名字。即使变量的类型是右值引用，由它的名字构成的表达式仍是左值表达式。</p>
@@ -725,6 +734,13 @@ class="footnote-text"><span><a target="_blank" rel="noopener" href="https://eel.
 class="footnote-text"><span><a target="_blank" rel="noopener" href="https://www.stroustrup.com/terminology.pdf">“New”
 Value Terminology - Bjarne Stroustrup</a>
 <a href="#fnref:6" rev="footnote" class="footnote-backref">
+↩︎</a></span></span>
+</li>
+<li>
+<span id="fn:7"
+class="footnote-text"><span><a target="_blank" rel="noopener" href="https://segmentfault.com/q/1010000000516149">C++
+decltype((i))为什么是个引用？ - SegmentFault 思否</a>
+<a href="#fnref:7" rev="footnote" class="footnote-backref">
 ↩︎</a></span></span>
 </li>
 </ol>
