@@ -19,7 +19,7 @@
     <meta name="description" content="训练AI的调参经验总结">
 <meta property="og:type" content="article">
 <meta property="og:title" content="AI调参经验">
-<meta property="og:url" content="https://reddish.fun/posts/Article/AI-training/index.html">
+<meta property="og:url" content="https://blog.reddish.fun/posts/Article/AI-training/index.html">
 <meta property="og:site_name" content="Homeworld">
 <meta property="og:description" content="训练AI的调参经验总结">
 <meta property="og:locale">
@@ -70,7 +70,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"reddish.fun","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":50,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"blog.reddish.fun","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":50,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -192,7 +192,7 @@
                   
                   
                   
-                  <a class="dropdown-item" href="https://reddish.fun/posts/Article/additional/">
+                  <a class="dropdown-item" target="_blank" rel="noopener" href="https://reddish.fun/posts/Article/additional/">
                     
                     <span>一些说明</span>
                   </a>
@@ -340,7 +340,7 @@ Toolkit以支持runtime api。</p>
 <p>测试时使用<code>model.eval()</code>虽然梯度不再传播，但仍然计算。<code>with torch.no_grad():</code>，防止计算梯度，节省资源。</p>
 <p>学习率大时收敛快，但收敛到一定程度后不再收敛，需要降低学习率。使用<code>torch.optim.lr_scheduler.ExponentialLR()</code>之类的API。</p>
 <p>标准训练流程为（代码选自<a
-href="https://reddish.fun/posts/Notebook/pytorch%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98-%E7%AC%94%E8%AE%B0/#%E8%87%AA%E5%8A%A8%E6%B1%82%E5%AF%BC%E5%B9%B6%E6%9B%B4%E6%96%B0%E5%8F%82%E6%95%B0">《pytorch深度学习实战》笔记
+target="_blank" rel="noopener" href="https://reddish.fun/posts/Notebook/pytorch%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98-%E7%AC%94%E8%AE%B0/#%E8%87%AA%E5%8A%A8%E6%B1%82%E5%AF%BC%E5%B9%B6%E6%9B%B4%E6%96%B0%E5%8F%82%E6%95%B0">《pytorch深度学习实战》笔记
 - Homeworld</a>）：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python">t_p = model(t_u, *params) <br>loss = loss_fn(t_p, t_c)<br><span class="hljs-comment"># 清空累积梯度</span><br>optimizer.zero_grad()<br><span class="hljs-comment"># 计算梯度</span><br>loss.backward()<br><span class="hljs-comment"># 查看params.grad并更新params，从中减去学习率乘梯度，就像手动求导并更新参数</span><br>optimizer.step()<br></code></pre></td></tr></table></figure>
 <p><code>optimizer.zero_grad()</code>也可以放在训练之前，只要不出现在<code>loss.backward()</code>和<code>optimizer.step()</code>之间即可。参考<a
@@ -471,7 +471,7 @@ class="math inline">\(\log(0)\)</span>之类的运算。</li>
   <div class="license-box my-3">
     <div class="license-title">
       <div>AI调参经验</div>
-      <div>https://reddish.fun/posts/Article/AI-training/</div>
+      <div>https://blog.reddish.fun/posts/Article/AI-training/</div>
     </div>
     <div class="license-meta">
       
