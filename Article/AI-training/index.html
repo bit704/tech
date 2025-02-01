@@ -192,7 +192,7 @@
                   
                   
                   
-                  <a class="dropdown-item" target="_blank" rel="noopener" href="https://reddish.fun/posts/Article/additional/">
+                  <a class="dropdown-item" href="/Article/additional/">
                     
                     <span>一些说明</span>
                   </a>
@@ -340,7 +340,7 @@ Toolkit以支持runtime api。</p>
 <p>测试时使用<code>model.eval()</code>虽然梯度不再传播，但仍然计算。<code>with torch.no_grad():</code>，防止计算梯度，节省资源。</p>
 <p>学习率大时收敛快，但收敛到一定程度后不再收敛，需要降低学习率。使用<code>torch.optim.lr_scheduler.ExponentialLR()</code>之类的API。</p>
 <p>标准训练流程为（代码选自<a
-target="_blank" rel="noopener" href="https://reddish.fun/posts/Notebook/pytorch%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98-%E7%AC%94%E8%AE%B0/#%E8%87%AA%E5%8A%A8%E6%B1%82%E5%AF%BC%E5%B9%B6%E6%9B%B4%E6%96%B0%E5%8F%82%E6%95%B0">《pytorch深度学习实战》笔记
+href="/Notebook/pytorch%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98-%E7%AC%94%E8%AE%B0/#%E8%87%AA%E5%8A%A8%E6%B1%82%E5%AF%BC%E5%B9%B6%E6%9B%B4%E6%96%B0%E5%8F%82%E6%95%B0">《pytorch深度学习实战》笔记
 - Homeworld</a>）：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python">t_p = model(t_u, *params) <br>loss = loss_fn(t_p, t_c)<br><span class="hljs-comment"># 清空累积梯度</span><br>optimizer.zero_grad()<br><span class="hljs-comment"># 计算梯度</span><br>loss.backward()<br><span class="hljs-comment"># 查看params.grad并更新params，从中减去学习率乘梯度，就像手动求导并更新参数</span><br>optimizer.step()<br></code></pre></td></tr></table></figure>
 <p><code>optimizer.zero_grad()</code>也可以放在训练之前，只要不出现在<code>loss.backward()</code>和<code>optimizer.step()</code>之间即可。参考<a
