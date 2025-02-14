@@ -1,6 +1,6 @@
 本站为个人博客，始于2021年12月5日
 
-- https://blog.reddish.fun/
+- https://tech.reddish.fun/
 
 - hexo的Fluid主题
 - PicGo / 阿里云OSS图床
