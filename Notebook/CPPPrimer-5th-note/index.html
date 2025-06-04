@@ -829,21 +829,21 @@ char＊的string构造函数（参见3.2.1节，第76页）不是explicit的。<
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th>头文件</th>
 <th>类型</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>iostream</td>
 <td>istream,wistream osteam,wostream iostream,wiostream</td>
 </tr>
-<tr class="even">
+<tr>
 <td>fsteam</td>
 <td>ifstream,wifstream ofstream,wofstream fstream,ofstream</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>sstream</td>
 <td>isstringstream,wistringstream ostringstream,wostringstream
 stringstream,wstringstream</td>
@@ -875,33 +875,33 @@ stringstream,wstringstream</td>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th>容器</th>
 <th>特点</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>vector</td>
 <td>可变大小数组。支持快速随机访问。尾部之外的位置插入/删除很慢。</td>
 </tr>
-<tr class="even">
+<tr>
 <td>deque</td>
 <td>双端队列。支持快速随机访问。头尾位置插入/删除很快。</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>list</td>
 <td>双向链表。只支持双向顺序访问。任何位置插入/删除很快。</td>
 </tr>
-<tr class="even">
+<tr>
 <td>forward_list</td>
 <td>单向链表。只支持单项顺序访问。任何位置插入/删除很快。</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>array</td>
 <td>固定大小数组。支持快速随机访问。不能添加或删除元素。</td>
 </tr>
-<tr class="even">
+<tr>
 <td>string</td>
 <td>与vector类似，专用于保存字符。</td>
 </tr>
@@ -914,161 +914,161 @@ stringstream,wstringstream</td>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th>通用容器操作</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><strong>类型别名</strong></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td>iterator</td>
 <td>此容器类型的迭代器类型</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>const_iterator</td>
 <td>const版本</td>
 </tr>
-<tr class="even">
+<tr>
 <td>size_type</td>
 <td>无符号整数类型，容器大小</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>difference_type</td>
 <td>带符号整数类型，迭代器距离</td>
 </tr>
-<tr class="even">
+<tr>
 <td>value_type</td>
 <td>元素类型</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>reference</td>
 <td>元素的左值类型；等同于value_type&amp;</td>
 </tr>
-<tr class="even">
+<tr>
 <td>const_reference</td>
 <td>元素的const左值类型</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>构造函数</strong></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td>C c;</td>
 <td>默认构造函数（与内置数组一样，标准库array的大小也是类型的一部分）</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>C c1(c2);</td>
 <td>构造c2的拷贝c1</td>
 </tr>
-<tr class="even">
+<tr>
 <td>C c(b,e);</td>
 <td>构造c，将迭代器b、e范围内的元素拷贝到c（array不支持）</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>C c{a,b,c...};</td>
 <td>列表初始化c</td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>赋值与swap</strong></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c1=c2</td>
 <td>将c1中元素替换为c2中元素</td>
 </tr>
-<tr class="even">
+<tr>
 <td>c1={a,b,c...}</td>
 <td>将c1中元素替换为列表中元素（array不支持）</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>a.swap(b)</td>
 <td>交换</td>
 </tr>
-<tr class="even">
+<tr>
 <td>swap(a,b)</td>
 <td>交换</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>大小</strong></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.size()</td>
 <td>c中元素数目（forward_list不支持）</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c.max_size()</td>
 <td>c可保存的最大元素数目</td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.empty()</td>
 <td>是否为空</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>添加/删除元素</strong></td>
 <td>（array不支持）（不同容器中接口不同）</td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.insert(args)</td>
 <td>将args中的元素拷贝进c</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c.emplace(inits)</td>
 <td>使用inits构造c中的一个元素</td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.erase(args)</td>
 <td>删除args指定的元素</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c.clear()</td>
 <td>删除c中所有元素，返回void</td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>关系运算符</strong></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>==, !=</td>
 <td>所有容器都支持相等/不等运算符</td>
 </tr>
-<tr class="even">
+<tr>
 <td>&lt;, &lt;=, &gt;, &gt;=</td>
 <td>关系运算符（无序关联容器不支持）</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>获取迭代器</strong></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.begin(), c.end()</td>
 <td>返回指向c的首元素和尾元素之后位置的迭代器</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c.cbegin(), c.end()</td>
 <td>const版本</td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>反向容器的额外成员</strong></td>
 <td>（forward_list不支持）</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>reverse_iterator</td>
 <td>逆序寻址</td>
 </tr>
-<tr class="even">
+<tr>
 <td>const_reverse_iterator</td>
 <td>const版本</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c.rbegin(), c.rend()</td>
 <td>返回指向c的尾元素和首元素之前位置的迭代器</td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.crbegin(), c.crend()</td>
 <td>const版本</td>
 </tr>
@@ -1086,45 +1086,45 @@ stringstream,wstringstream</td>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th>顺序容器添加元素操作</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>c.push_back(t)</td>
 <td>尾部创建</td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.emplace_back(args)</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c.push_front()</td>
 <td>头部创建</td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.emplace_front(args)</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c.insert(p,t)</td>
 <td>迭代器p指向的元素之前创建元素，<strong>返回指向新添加的元素的迭代器</strong></td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.emplace(p,args)</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c.insert(p,n,t)</td>
 <td>插入n个值为t的元素</td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.insert(p,b,e)</td>
 <td>插入迭代器b、e范围内的元素</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c.insert(p,il)</td>
 <td>插入il（花括号包围的元素值列表）</td>
 </tr>
@@ -1142,25 +1142,25 @@ stringstream,wstringstream</td>
 <p>vector、string不支持push_front和emplace_front</p>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th>顺序容器访问元素操作</th>
 <th>（返回引用）</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>c.back()</td>
 <td>若c为空，函数行为未定义（forward_list不支持）</td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.front()</td>
 <td>若c为空，函数行为未定义</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c[n]</td>
 <td>若n&gt;=c.size()，函数行为未定义</td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.at(n)</td>
 <td>若下表越界，抛出out_of_range异常</td>
 </tr>
@@ -1170,29 +1170,29 @@ stringstream,wstringstream</td>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th>顺序容器删除元素操作</th>
 <th>（一律不适用于array）</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>c.pop_back()</td>
 <td>若c为空，函数行为未定义（forward_list不支持）</td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.pop_front()</td>
 <td>若c为空，函数行为未定义（vector、string不支持）</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c.erase(p)</td>
 <td>删除迭代器p所指向元素，<strong>返回指向被删元素之后元素的迭代器</strong></td>
 </tr>
-<tr class="even">
+<tr>
 <td>c.erase(b,e)</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>c.clear()</td>
 <td></td>
 </tr>
@@ -1266,41 +1266,41 @@ predicate，意味着它们有两个参数）。</p>
 <h2 id="第11章-关联容器">第11章 关联容器</h2>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th>容器</th>
 <th>描述</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>map</td>
 <td>键值对</td>
 </tr>
-<tr class="even">
+<tr>
 <td>set</td>
 <td>键</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>multimap</td>
 <td>可重复</td>
 </tr>
-<tr class="even">
+<tr>
 <td>multiset</td>
 <td>可重复</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>unordered_map</td>
 <td>哈希函数组织</td>
 </tr>
-<tr class="even">
+<tr>
 <td>unordered_set</td>
 <td>哈希函数组织</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>unordered_multimap</td>
 <td>可重复</td>
 </tr>
-<tr class="even">
+<tr>
 <td>unordered_multiset</td>
 <td>可重复</td>
 </tr>
@@ -1338,37 +1338,37 @@ key_type， mapped_type&gt;</p>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th>shared_ptr和unique_ptr都支持</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>shared_ptr&lt;T&gt; sp</td>
 <td>空智能指针</td>
 </tr>
-<tr class="even">
+<tr>
 <td>unique_ptr&lt;T&gt; up</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>p</td>
 <td>若p指向一个对象，返回true</td>
 </tr>
-<tr class="even">
+<tr>
 <td>*p</td>
 <td>解引用p，获得它指向的对象</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>p-&gt;mem</td>
 <td>等价于(*p).mem</td>
 </tr>
-<tr class="even">
+<tr>
 <td>p.get()</td>
 <td>返回p中保存的指针。<strong>永远不要用get初始化另一个智能指针或者为另一个智能指针赋值。</strong></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>swap(p,q) / p.swap(q)</td>
 <td>交换</td>
 </tr>
@@ -1377,29 +1377,29 @@ key_type， mapped_type&gt;</p>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th>shared_ptr独有操作</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>make_shared&lt;T&gt;(args)</td>
 <td>初始化shared_ptr</td>
 </tr>
-<tr class="even">
+<tr>
 <td>shared_ptr&lt;T&gt; p(q)</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>p = q</td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td>p.unique()</td>
 <td>p.use_count()为1则返回true</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>p.use_count()</td>
 <td>返回与p共享对象的智能指针数量；可能很慢，用于调试</td>
 </tr>
@@ -1424,37 +1424,37 @@ key_type， mapped_type&gt;</p>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th>定义和改变shared_ptr的其它方法</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>shared_ptr&lt;T&gt; p(q)</td>
 <td>p管理内置指针q所指向的对象；q必须指向new分配的内存，且能够转换为T*类型</td>
 </tr>
-<tr class="even">
+<tr>
 <td>shared_ptr&lt;T&gt; p(u)</td>
 <td>p从unique_ptr u那里接管对象所有权，将u置空</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>shared_ptr&lt;T&gt; p(q, d)</td>
 <td>p接管内置指针q所指向对象的所有权。p将使用可调用对象d来代替delete。</td>
 </tr>
-<tr class="even">
+<tr>
 <td>shared_ptr&lt;T&gt; p(p2, d)</td>
 <td>p是shared_ptr p2的拷贝。p将使用可调用对象d来代替delete。</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>p.reset()</td>
 <td>释放</td>
 </tr>
-<tr class="even">
+<tr>
 <td>p.reset(q)</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>p.reset(q, d)</td>
 <td></td>
 </tr>
@@ -1463,41 +1463,41 @@ key_type， mapped_type&gt;</p>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th>unique_ptr操作</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>unique_ptr&lt;T&gt; u1</td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td>unique_ptr&lt;T, D&gt; u2</td>
 <td>u2会使用一个类型为D的可调用对象来释放它的指针</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>unique_ptr&lt;T, D&gt; u(d)</td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td>u = nullptr</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>u.release()</td>
 <td>释放，返回指针，置空</td>
 </tr>
-<tr class="even">
+<tr>
 <td>u.reset()</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>u.reset(q)</td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td>u.reset(nullptr)</td>
 <td></td>
 </tr>
@@ -1508,37 +1508,37 @@ key_type， mapped_type&gt;</p>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th>weak_ptr操作</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>weak_ptr&lt;T&gt; w</td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td>weak_ptr&lt;T&gt; w(sp)</td>
 <td>与shared_ptr sp指向相同对象得weak_ptr</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>w = p</td>
 <td>p可以是shared_ptr或weak_ptr</td>
 </tr>
-<tr class="even">
+<tr>
 <td>w.reset()</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>w.use_count()</td>
 <td>与w共享对象的shared_ptr的数量</td>
 </tr>
-<tr class="even">
+<tr>
 <td>w.expired()</td>
 <td>w.use_count()为0返回true</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>w.lock()</td>
 <td>expired为true返回空shared_ptr，否则返回指向w的对象的shared_ptr</td>
 </tr>
@@ -1559,29 +1559,29 @@ key_type， mapped_type&gt;</p>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th>allocator</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>allocator&lt;T&gt; a</td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td>a.allocate(n)</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>a.deallocate(p, n)</td>
 <td>释放内存，n必须是p创建时所要求的大小。之前要destroy。</td>
 </tr>
-<tr class="even">
+<tr>
 <td>a.construct(p, args)</td>
 <td>args被传递给类型为T的构造函数。</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>a.destroy(p)</td>
 <td></td>
 </tr>
@@ -1746,7 +1746,7 @@ virtual）函数无须定义。在函数体的位置（即在声明语句的分�
 <p>假定D继承自B，D的XX能否使用派生类向基类的转换：</p>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th>继承方式</th>
 <th>成员函数和友元</th>
 <th>用户代码</th>
@@ -1754,19 +1754,19 @@ virtual）函数无须定义。在函数体的位置（即在声明语句的分�
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>public</td>
 <td>✓</td>
 <td>✓</td>
 <td>✓</td>
 </tr>
-<tr class="even">
+<tr>
 <td>protected</td>
 <td>✓</td>
 <td>✗</td>
 <td>✓</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>private</td>
 <td>✓</td>
 <td>✗</td>

@@ -426,236 +426,236 @@ iterations，没有收敛）。因此减小训练参数效果不好。</p>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">参数名</th>
 <th>默认值</th>
 <th style="text-align: left;">作用</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">config</td>
 <td></td>
 <td style="text-align: left;">配置文件路径</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">expname</td>
 <td></td>
 <td style="text-align: left;">实验名</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">basedir</td>
 <td>./logs/</td>
 <td style="text-align: left;">存放ckpts和logs的路径</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">datadir</td>
 <td>./data/llff/fern</td>
 <td style="text-align: left;">输入数据路径</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">netdepth</td>
 <td>8</td>
 <td style="text-align: left;">网络层数</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">netwidth</td>
 <td>256</td>
 <td style="text-align: left;">每层的通道数</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">N_rand</td>
 <td>32*32*4</td>
 <td style="text-align: left;">批大小 (每一梯度步的随即光线数)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">lrate</td>
 <td>5e-4</td>
 <td style="text-align: left;">学习率</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">lrate_decay</td>
 <td>250</td>
 <td style="text-align: left;">指数学习率下降(1000s内)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">chunk</td>
 <td>1024*32</td>
 <td style="text-align: left;">平行处理的光线数(内存不足时应减小)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">netchunk</td>
 <td>1024*64</td>
 <td
 style="text-align: left;">网络里平行发送的pts数(内存不足时应减小)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">no_batching</td>
 <td>False</td>
 <td style="text-align: left;">一次只从一张图片获取随机光线</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">no_reload</td>
 <td>False</td>
 <td style="text-align: left;">不从保存的模型中重载权重</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">ft_path</td>
 <td>None</td>
 <td style="text-align: left;">专为coarse网络重载的权重npy文件</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">random_seed</td>
 <td>None</td>
 <td style="text-align: left;">确保结果可以复现的固定随机种子</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">precrop_iters</td>
 <td>0</td>
 <td style="text-align: left;">在central crops训练的步数</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">precrop_frac</td>
 <td>0.5</td>
 <td style="text-align: left;">为central crops拿的图片部分</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">N_samples</td>
 <td>64</td>
 <td style="text-align: left;">每道光线的粗采样数</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">N_importance</td>
 <td>0</td>
 <td style="text-align: left;">每道光线的附加细采样数</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">perturb</td>
 <td>1.</td>
 <td style="text-align: left;">0. for no jitter, 1. for jitter</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">use_viewdirs</td>
 <td>False</td>
 <td style="text-align: left;">使用5D而不是3D输入</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">i_embed</td>
 <td>0</td>
 <td style="text-align: left;">0对应默认位置编码，1对应None</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">multires</td>
 <td>10</td>
 <td style="text-align: left;">位置编码的最大频率对数（3D位置）</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">multires_views</td>
 <td>4</td>
 <td style="text-align: left;">位置编码的最大频率对数（2D方向）</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">raw_noise_std</td>
 <td>0.</td>
 <td style="text-align: left;">std dev of noise added to regularize
 sigma_a output, 1e0 recommended</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">render_only</td>
 <td>False</td>
 <td style="text-align: left;">do not optimize, reload weights and render
 out render_poses path</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">render_test</td>
 <td>False</td>
 <td style="text-align: left;">render the test set instead of
 render_poses path</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">render_factor</td>
 <td>0</td>
 <td style="text-align: left;">downsampling factor to speed up rendering,
 set 4 or 8 for fast preview</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">dataset_type</td>
 <td>llff</td>
 <td style="text-align: left;">三个选项：llff / blender / deepvoxels</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">testskip</td>
 <td>8</td>
 <td style="text-align: left;">will load 1/N images from test/val sets,
 useful for large datasets like deepvoxels</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">shape</td>
 <td>greek</td>
 <td style="text-align: left;">四个选项：armchair / cube / greek /
 vase</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">white_bkgd</td>
 <td>False</td>
 <td style="text-align: left;">set to render synthetic data on a white
 bkgd (always use for dvoxels)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">half_res</td>
 <td>False</td>
 <td style="text-align: left;">load blender synthetic data at 400x400
 instead of 800x800</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">factor</td>
 <td>8</td>
 <td style="text-align: left;">LLFF图片的降采样因子</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">no_ndc</td>
 <td>False</td>
 <td style="text-align: left;">do not use normalized device coordinates
 (set for non-forward facing scenes)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">lindisp</td>
 <td>False</td>
 <td style="text-align: left;">sampling linearly in disparity rather than
 depth</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">spherify</td>
 <td>False</td>
 <td style="text-align: left;">set for spherical 360 scenes</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">llffhold</td>
 <td>8</td>
 <td style="text-align: left;">will take every 1/N images as LLFF test
 set, paper uses 8</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">i_print</td>
 <td>100</td>
 <td style="text-align: left;">控制台打印频率</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">i_img</td>
 <td>500</td>
 <td style="text-align: left;">tesnorboard图片注册频率</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">i_weights</td>
 <td>1000</td>
 <td style="text-align: left;">权重模型保存频率</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">i_testset</td>
 <td>5000</td>
 <td style="text-align: left;">测试集保存频率</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">i_video</td>
 <td>5000</td>
 <td style="text-align: left;">渲染姿态视频保存频率</td>

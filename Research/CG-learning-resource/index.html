@@ -362,24 +362,24 @@ albedo、specular albedo。</p>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th>Metallic/Roughness工作流</th>
 <th>Specular/Glossiness工作流</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>Base Color贴图<br/>（三通道）<br/>（对于金属存<span
 class="math inline">\(F_0\)</span>，对于电介质存漫反射颜色（此时<span
 class="math inline">\(F_0\)</span>设为0.04），混合材质可以认为同时存了这两种数据）<br/>（除了微观遮蔽信息外不该含有任何光照信息）</td>
 <td>Diffuse贴图<br/>（三通道）<br/>（对于金属存0，对于电介质存漫反射颜色）<br/>（除了微观遮蔽信息外不该含有任何光照信息）</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Metallic贴图<br/>（单通道，相当于图层遮罩）<br/>（0代表非金属，1代表纯金属，中间值代表锈蚀等中间状态）</td>
 <td>Specular贴图<br/>（三通道）<br/>（存<span
 class="math inline">\(F_0\)</span>）</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Roughness<br/>（单通道）<br/>（0代表平滑，1代表粗糙）</td>
 <td>Glossiness贴图<br/>（单通道）<br/>（0代表粗糙，1代表光滑）</td>
 </tr>
@@ -390,21 +390,21 @@ class="math inline">\(F_0\)</span>）</td>
 <table>
 
 <thead>
-<tr class="header">
+<tr>
 <th></th>
 <th>Metallic/Roughness工作流</th>
 <th>Specular/Glossiness工作流</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>优点</td>
 <td>由于电介质的<span
 class="math inline">\(F_0\)</span>规定为0.04，所以设计师在对其赋值时不易出错。如需调整，在大多实现流程中有控制器可以直接覆写这个值。<br/>内存需求小。<br/>兼容性广。</td>
 <td>边缘效应不明显。<br/>可以在Specular贴图中自由调整电介质的<span
 class="math inline">\(F_0\)</span>。</td>
 </tr>
-<tr class="even">
+<tr>
 <td>缺点</td>
 <td>边缘效应较明显。</td>
 <td>自由调整电介质的<span

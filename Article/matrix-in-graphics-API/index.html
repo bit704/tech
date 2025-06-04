@@ -471,8 +471,7 @@ a_{31}[b_{11} &amp;b_{12} &amp;b_{13}] +a_{32}[b_{21} &amp;b_{22}
 <h1 id="行优先与列优先">行优先与列优先</h1>
 <p>同样将一维元素数组表示为矩阵，<strong>列优先</strong>矩阵指矩阵中的元素是按列解释的，<strong>行优先</strong>矩阵指矩阵中的元素是按行解释的。两种矩阵可以通过转置相互转换。（也翻译为行主序和列主序）</p>
 <p>例如数组<span
-class="math inline">\(m_{11}m_{12}m_{13}m_{14}m_{21}m_{22}m_{23}m_{24}m_{31}m_{32}m_{33}m_{34}m_{41}m_{42}m_{43}
-m_{44}\)</span></p>
+class="math inline">\(m_{11}m_{12}m_{13}m_{14}m_{21}m_{22}m_{23}m_{24}m_{31}m_{32}m_{33}m_{34}m_{41}m_{42}m_{43}  m_{44}\)</span></p>
 <p>解释为行优先矩阵 <span class="math display">\[
 \mathbf{M}=\begin{bmatrix} m_{11} &amp; m_{12} &amp; m_{13} &amp; m_{14}
 \\
@@ -495,8 +494,7 @@ m_{14} &amp; m_{24} &amp; m_{34} &amp; m_{44} \end{bmatrix}
 <p>在DirectX中，矩阵乘法的顺序是从左到右，变换生效的先后顺序也是从左到右。</p>
 <p>DirectXMath中的<code>XMFLOAT4X4</code>和<code>XMMATRIX</code>均是<strong>行优先</strong>矩阵，它的数据流如下：</p>
 <p><span
-class="math inline">\(m_{11}m_{12}m_{13}m_{14}m_{21}m_{22}m_{23}m_{24}m_{31}m_{32}m_{33}m_{34}m_{41}m_{42}m_{43}
-m_{44}\)</span></p>
+class="math inline">\(m_{11}m_{12}m_{13}m_{14}m_{21}m_{22}m_{23}m_{24}m_{31}m_{32}m_{33}m_{34}m_{41}m_{42}m_{43}  m_{44}\)</span></p>
 <p>传递到HLSL后，若是传递给cb0的寄存器的前4个向量，那么它内存布局一定如下：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c++">cb0[<span class="hljs-number">0</span>].xyzw = (m11, m12, m13, m14);<br>cb0[<span class="hljs-number">1</span>].xyzw = (m21, m22, m23, m24);<br>cb0[<span class="hljs-number">2</span>].xyzw = (m31, m32, m33, m34);<br>cb0[<span class="hljs-number">3</span>].xyzw = (m41, m42, m43, m44);<br></code></pre></td></tr></table></figure>
 <p>而在HLSL中，默认的<code>matrix</code>或<code>float4x4</code>采用的是<strong>列优先</strong>矩阵。</p>
