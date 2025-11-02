@@ -254,7 +254,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          10k 字
+          11k 字
         
       </span>
     
@@ -307,10 +307,12 @@ target="_blank" rel="noopener" href="https://dev.epicgames.com/documentation/en-
 <h1 id="uobject管理">UObject管理</h1>
 <p><code>UObject</code>是UE的基石，其内部继承体系如下：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// UE_5.0\Engine\Source\Runtime\CoreUObject文件夹</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">COREUOBJECT_API</span> UObjectBase<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">COREUOBJECT_API</span> UObjectBaseUtility : <span class="hljs-keyword">public</span> UObjectBase<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">COREUOBJECT_API</span> UObject : <span class="hljs-keyword">public</span> UObjectBaseUtility<br></code></pre></td></tr></table></figure>
-<p>其中，<code>UObjectBase</code>提供底层实现，<code>UObjectBaseUtility</code>提供功能函数，都不建议在游戏代码中直接使用。</p>
 <blockquote>
 <p><code>COREUOBJECT_API</code>是定义为<code>DLLEXPORT</code>的宏，后者用于导出函数到DLL，在MSVC下定义为<code>__declspec(dllexport)</code>，在GCC和Clang下定义为<code>__attribute__((visibility("default")))</code>。</p>
 </blockquote>
+<p>其中，<code>UObjectBase</code>包含UObject所有的数据成员：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c++">EObjectFlags ObjectFlags; <span class="hljs-comment">// 标志位，枚举类型，4字节</span><br>int32 InternalIndex; <span class="hljs-comment">// 该UObject在GObjectArray中的索引，4字节</span><br>UClass* ClassPrivate; <span class="hljs-comment">// 类型指针，8字节</span><br>FName NamePrivate; <span class="hljs-comment">// 名字，8/12字节（是否定义WITH_CASE_PRESERVING_NAME宏）</span><br>UObject* OuterPrivate; <span class="hljs-comment">// 外部对象指针，8字节</span><br></code></pre></td></tr></table></figure>
+<p>加上指向虚函数表的虚指针（8字节），一个最简单的UObject大小为40/48字节。</p>
 <p><code>UObjectArray.h</code>中声明了用于全局<code>UObject</code>管理的<code>GUObjectArray</code>和<code>GUObjectClusters</code>：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">extern</span> COREUOBJECT_API FUObjectArray GUObjectArray; <span class="hljs-comment">// 变量定义在UObjectHash.cpp</span><br><span class="hljs-keyword">extern</span> COREUOBJECT_API FUObjectClusterContainer GUObjectClusters; <span class="hljs-comment">// 变量定义在UObjectArray.cpp</span><br></code></pre></td></tr></table></figure>
 <p><code>FUObjectArray</code>内部持有<code>FChunkedFixedUObjectArray</code>对象，后者内部持有<code>FUObjectItem</code>二级指针，管理划分为固定大小（<span
