@@ -287,7 +287,7 @@ target="_blank" rel="noopener" href="https://stackoverflow.com/questions/5887248
 <p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/403189513">对iOS
 Jetsam内存管理机制的一些探索 - 知乎</a></p>
 </blockquote>
-<p>首先，要避免内存泄漏，这是最基本的要求。减少内存使用大致有压缩、复用、牺牲表现、及时释放四种方法。通过UE自带的<strong>Insights</strong>、<strong>memreport</strong>、<strong>LLM</strong>，外部工具<strong>VMmap</strong>、<strong>keymob</strong>等，可以检查内存使用情况、发现可以优化的瓶颈。</p>
+<p>首先，要避免内存泄漏，这是最基本的要求。减少内存使用大致有压缩、复用（对象池）、牺牲表现、及时释放四类方法。通过UE自带的<strong>Insights</strong>、<strong>memreport</strong>、<strong>LLM</strong>，外部工具<strong>VMmap</strong>、<strong>keymob</strong>等，可以检查内存使用情况、发现可以优化的瓶颈。</p>
 <blockquote>
 <p><a
 target="_blank" rel="noopener" href="https://indienova.com/indie-game-development/unreal-engine-mobile-optimization/#iah-0">UE
@@ -302,7 +302,7 @@ target="_blank" rel="noopener" href="https://indienova.com/indie-game-developmen
 <p>FaceRemap即碰撞体经过Cook之后依然保留的面重映射表，以在场景查询中支持物理材质。若不需要，在项目设置中开启<code>Suppress Face Remap Table</code>；即使没有开启，只有勾上了<code>Support Physical Material Masks</code>的静态网格体才会生成FaceRemap。</p>
 <p>如果项目不依赖于通过碰撞检测结果来找回UV坐标的功能（FindCollisionUV），可以在项目设置中关闭<code>Support UV From Hit Results</code>。</p>
 <h1 id="帧率">帧率</h1>
-<p>通过UE自带的<strong>Insights</strong>，定位耗时高和引起帧率波动的函数进行优化。</p>
+<p>通过UE自带的<strong>Insights</strong>，定位耗时高和引起帧率波动的函数进行优化。尽量减少不必要的<code>Tick</code>，将耗时逻辑分帧执行，通过并发和异步减少主线程压力。</p>
 <h2 id="gc-1">GC</h2>
 <p>对于GC，设置<code>gc.MaxObjectsNotConsideredByGC</code>和<code>gc.SizeOfPermanentObjectPool</code>为合适的值，从而降低GC消耗。若要设置精准的值，从游戏日志中找到如下内容，将第一个数设置为<code>gc.MaxObjectsNotConsideredByGC</code>，第二个数设置为<code>gc.SizeOfPermanentObjectPool</code>。</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs csharp">[<span class="hljs-meta">2015.03.04-10.00.21:716</span>][  <span class="hljs-number">0</span>]LogObj: <span class="hljs-number">38723</span> objects <span class="hljs-keyword">as</span> part of root <span class="hljs-keyword">set</span> at end of initial load.<br>[<span class="hljs-meta">2015.03.04-10.00.21:716</span>][  <span class="hljs-number">0</span>]LogUObjectAllocator: <span class="hljs-number">9779464</span> <span class="hljs-keyword">out</span> of <span class="hljs-number">0</span> bytes used <span class="hljs-keyword">by</span> permanent <span class="hljs-built_in">object</span> pool.<br></code></pre></td></tr></table></figure>
