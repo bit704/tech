@@ -222,7 +222,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          3.9k 字
+          4k 字
         
       </span>
     
@@ -297,7 +297,15 @@ target="_blank" rel="noopener" href="https://indienova.com/indie-game-developmen
 <h2 id="gc">GC</h2>
 <p>UE的<code>gc.TimeBetweenPurgingPendingKillObjects</code>默认是61.1秒，针对不同平台设置不同的内存阈值，当<code>FPlatformMemory::GetStats().AvailablePhysical</code>小于阈值时，调用<code>ForceGarbageCollection</code>进行强制GC。</p>
 <h2 id="物理">物理</h2>
-<p>对于静态网格体，不需要碰撞时<code>Collision Presets</code>选择<code>No Collision</code>，有碰撞时<code>Collision Complexity</code>优先使用<code>Use Simple Collision As Complex</code>。简单碰撞优先使用简单几何碰撞体，然后再考虑凸包。如果CPU端不需要几何数据，关闭<code>Allow CPUAccess</code>。</p>
+<p>对于静态网格体，不需要碰撞时 <code>Collision Presets</code> 选择
+<code>No Collision</code> ，有碰撞时优先使用简单碰撞，
+<code>Collision Complexity</code> 优先选择
+<code>Use Simple Collision As Complex</code>
+。简单碰撞优先使用简单几何碰撞体，然后再考虑凸包。若要使用复杂碰撞，可以设置
+<code>LOD For Collison For IOS</code> 、
+<code>LOD For Collison For Android</code>
+在移动端使用更简化的网格作为复杂碰撞。如果CPU端不需要几何数据，关闭
+<code>Allow CPUAccess</code> 。</p>
 <p>对于骨骼网格体，如果CPU端不需要LOD数据，关闭<code>Allow CPUAccess</code>。</p>
 <p>FaceRemap即碰撞体经过Cook之后依然保留的面重映射表，以在场景查询中支持物理材质。若不需要，在项目设置中开启<code>Suppress Face Remap Table</code>；即使没有开启，只有勾上了<code>Support Physical Material Masks</code>的静态网格体才会生成FaceRemap。</p>
 <p>如果项目不依赖于通过碰撞检测结果来找回UV坐标的功能（FindCollisionUV），可以在项目设置中关闭<code>Support UV From Hit Results</code>。</p>
