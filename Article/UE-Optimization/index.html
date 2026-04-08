@@ -222,7 +222,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          4k 字
+          4.6k 字
         
       </span>
     
@@ -335,11 +335,20 @@ target="_blank" rel="noopener" href="https://developer.unity.cn/projects/68f6233
 <p>对于骨骼网格体对应的物理资产，针对不同平台制作不同级别的简化物理资产，同时保证在收到打击时（<code>AddImpulse</code>）的布娃娃表现一致。比如，若<code>bVelChange</code>为true，物理资产及其简化版应保证受击骨骼质量一致（动能一致）、总质量一致。</p>
 <h1 id="工具">工具</h1>
 <h2 id="insights">Insights</h2>
+<p>UnrealInsights编译后位于引擎的<code>Binaries</code>文件夹下。</p>
 <p>通道gpu、bookmark、frame、cpu、log默认启用，<a
 target="_blank" rel="noopener" href="https://dev.epicgames.com/documentation/zh-cn/unreal-engine/unreal-insights-reference-in-unreal-engine-5">其他通道</a>可自行选择开启，追踪内存的话开启memory通道即可。</p>
-<p>追踪编辑器独立进程游戏/游戏包体：</p>
+<p><code>-tracefile</code>将数据直接写入到文件，utrace文件在<code>Saved/Profiling</code>目录下；<code>-tracehost=ip</code>将数据发送到指定ip的电脑上运行的<code>UnrealInsights.exe</code>，如不指定，默认发送到本机。</p>
+<p>编辑器独立进程游戏：</p>
+<p>在<code>Level Editor</code>-&gt;<code>Play</code>-&gt;<code>Play in Standalone Game</code>-&gt;<code>Additional Launch Parameters</code>输入：</p>
+<figure class="highlight mel"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mel">-<span class="hljs-keyword">trace</span>=<span class="hljs-keyword">log</span>,cpu,frame,bookmark,gpu,<span class="hljs-keyword">memory</span> -statnamedevents<br></code></pre></td></tr></table></figure>
+<p>如果要同时记录DS性能，勾上同页的<code>Multiplayer Options</code>-&gt;<code>Launch Separate Server</code>启动DS。</p>
+<p>PC包体：</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs abnf">.\TEST.exe -trace<span class="hljs-operator">=</span><span class="hljs-string">&quot;log,cpu,frame,bookmark,gpu,memory&quot;</span> -statnamedevents -tracefile<br></code></pre></td></tr></table></figure>
+<p>手机包体：</p>
+<p>将以下内容写入<code>UE4CommandLine.txt</code>，放在游戏包内，和引擎、游戏文件夹放在同级目录，即<code>Manifest_UFSFiles_Android.txt</code>同级目录。</p>
 <figure class="highlight mel"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mel">-<span class="hljs-keyword">trace</span>=<span class="hljs-keyword">log</span>,cpu,frame,bookmark,gpu,<span class="hljs-keyword">memory</span> -statnamedevents -tracefile<br></code></pre></td></tr></table></figure>
-<p>编辑器cmd追踪：</p>
+<p>编辑器内cmd追踪：</p>
 <figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs crmsh">Trace.<span class="hljs-literal">Start</span> log,cpu,frame,bookmark,gpu,memory -statnamedevents -tracefile<br>Trace.<span class="hljs-literal">Stop</span><br></code></pre></td></tr></table></figure>
 <blockquote>
 <p><a
@@ -348,6 +357,9 @@ Epic Developer Community</a></p>
 <p><a
 target="_blank" rel="noopener" href="https://dev.epicgames.com/documentation/zh-cn/unreal-engine/memory-insights-in-unreal-engine">虚幻引擎中的Memory
 Insights Epic Developer Community</a></p>
+<p><a
+target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/448700230">UE4使用安卓真机UnrealInsights性能分析
+- 知乎</a></p>
 </blockquote>
 <h2 id="llm">LLM</h2>
 <p>在独立进程游戏中运行时添加额外启动参数<code>-llm</code>，使用<code>stat llm</code>系列命令即可查看当前内存占用信息。llm即Low
