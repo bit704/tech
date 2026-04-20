@@ -16,23 +16,25 @@
   <meta name="author" content="bit704">
   <meta name="keywords" content="blog">
   
-    <meta name="description" content="UE问题记录">
+    <meta name="description" content="碰撞检测">
 <meta property="og:type" content="article">
-<meta property="og:title" content="UE盒体碰撞体非均匀缩放问题">
-<meta property="og:url" content="https://tech.reddish.fun/Article/UE-Non-Uniform-Scale-Issue/index.html">
+<meta property="og:title" content="UE PhysX BroadPhase">
+<meta property="og:url" content="https://tech.reddish.fun/Notebook/UE-PhysX-BroadPhase/index.html">
 <meta property="og:site_name" content="Homeworld">
-<meta property="og:description" content="UE问题记录">
+<meta property="og:description" content="碰撞检测">
 <meta property="og:locale">
-<meta property="article:published_time" content="2025-08-09T16:00:00.000Z">
+<meta property="og:image" content="https://bit704.oss-cn-beijing.aliyuncs.com/image/4round1.png">
+<meta property="article:published_time" content="2025-04-18T05:00:00.000Z">
 <meta property="article:author" content="bit704">
 <meta property="article:tag" content="UE">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bit704.oss-cn-beijing.aliyuncs.com/image/4round1.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>UE盒体碰撞体非均匀缩放问题 - Homeworld</title>
+  <title>UE PhysX BroadPhase - Homeworld</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -198,7 +200,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="UE盒体碰撞体非均匀缩放问题"></span>
+            <span id="subtitle" data-typed-text="UE PhysX BroadPhase"></span>
           
         </div>
 
@@ -209,8 +211,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-08-10 00:00" pubdate>
-          2025年8月10日 凌晨
+        <time datetime="2025-04-18 13:00" pubdate>
+          2025年4月18日 下午
         </time>
       </span>
     
@@ -222,7 +224,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          3.4k 字
+          4.3k 字
         
       </span>
     
@@ -262,97 +264,103 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">UE盒体碰撞体非均匀缩放问题</h1>
+            <h1 style="display: none">UE PhysX BroadPhase</h1>
             
             
               <div class="markdown-body">
                 
-                <p>UE问题记录</p>
+                <p>碰撞检测</p>
 <span id="more"></span>
-<p>本文参考UE4.27.2源码</p>
-<h1 id="问题与解决方案">问题与解决方案</h1>
-<p>起因是发现在fbx文件内给模型添加<strong>轴对齐</strong>的盒体碰撞体时，如果将碰撞体命名为<strong>UCX</strong>，导入UE后缩放模型时碰撞体均正常缩放；如果将碰撞体命名为<strong>UBX</strong>，导入UE后<strong>非均匀缩放</strong>模型时出现碰撞体缩放不一致的问题。如果直接在UE中添加盒体碰撞体，均正常缩放。</p>
-<p>检索时发现了同样的问题：</p>
-<p><a
-target="_blank" rel="noopener" href="https://forums.unrealengine.com/t/box-collision-non-uniform-scale-issue/382743">Box
-Collision non-uniform scale issue - Development / World Creation - Epic
-Developer Community Forums</a></p>
-<p>这个问题的原因在于，UE的<strong>UBX</strong>由FKBoxElem存储，只记录了盒体的<strong>中心、旋转和三条边长</strong>，在对模型进行缩放时，其盒体碰撞体相当于<strong>在盒体坐标系（与盒体轴对齐的坐标系）下进行缩放</strong>。当从fbx导入盒体碰撞体时，调用<code>StaticMeshImportUtils::AddBoxGeomFromTris</code>函数生成盒体，其原理是遍历所有三角面片，统计每个法线方向上出现的平面（理论上盒体有3组法线，每组有2个平面），判断是否可以生成合适的盒体。这个过程生成的盒体的轴对齐坐标系不一定和模型的坐标系一致，例如当盒体坐标系的XYZ轴和模型坐标系的YZX轴对齐时，在缩放模型的X轴时，会缩放盒体的Z轴。这就会导致在非均匀缩放时，盒体碰撞体的缩放与模型并不一致。如果直接在UE中添加盒体碰撞体，此时盒体的坐标系和模型的坐标系默认是一致的，所以不会出现这种问题。<strong>UCX</strong>由FKConvexElem存储，记录的是顶点数据，所以可以正确非均匀缩放。</p>
-<p>通过修改<code>StaticMeshImportUtils::AddBoxGeomFromTris</code>函数（调换盒体的XYZ三边的次序使其轴对称坐标系与模型坐标系一致），可以保证在fbx导入的盒体碰撞体无旋转的情况下（即盒体轴对齐）确保碰撞体与模型坐标系一致，即和直接在UE中添加的盒体碰撞体一致，这样模型在非均匀缩放时碰撞体能跟着正确缩放。</p>
-<p><strong>但是如果UBX盒体碰撞体本身不是轴对齐的，那还是无法正确非均匀缩放。</strong>本质上来说，如果盒体和模型坐标系不是轴对齐的，当对模型非均匀缩放后，盒体若正确缩放，则可能变形而不再是正确的盒体。</p>
-<p>只要制作中使用的盒体碰撞体是轴对齐的，那么以UBX形式导入UE后就可以跟着模型非均匀缩放。否则只能以UCX导入。</p>
-<h1
-id="附静态网格体碰撞体命名规则及注意事项">附：静态网格体碰撞体命名规则及注意事项</h1>
+<h1 id="broad-phase介绍">Broad Phase介绍</h1>
+<p>Broad
+Phase是碰撞检测的第一步，基于物体的AABB进行碰撞检测，目标是快速剔除大部分不可能发生碰撞的物体对，只把可能重叠的候选对传给后续的Narrow
+Phase做精确检测。</p>
+<p>PhysX的Speculative
+CCD即通过根据速度和时间步长膨胀AABB来避免高速漏检。</p>
+<p><code>void FPhysScene_PhysX::InitPhysScene(const AWorldSettings* Settings)</code>初始化PhysX场景，在这里对Broad
+Phase进行配置。</p>
+<p><code>PxBroadPhaseType::Enum physx::PxSceneDesc::broadPhaseType</code>指定使用哪种算法，如果不指定，默认初始化为<code>eSAP</code>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">PxBroadPhaseType</span><br>&#123;<br>    <span class="hljs-keyword">enum</span> <span class="hljs-title class_">Enum</span><br>    &#123;<br>       eSAP,     <span class="hljs-comment">//!&lt; 3-axes sweep-and-prune</span><br>       eMBP,     <span class="hljs-comment">//!&lt; Multi box pruning</span><br>       eGPU,<br><br>       eLAST<br>    &#125;;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<p><code>eSAP</code> 指Sweep And
+Prune，通过对所有物体在坐标轴上的范围进行排序来检测重叠。初始化时采用基数排序，物体移动时采用插入排序。当大量物体处于静止时性能很好，内存开销低。当多数物体都在运动或频繁添加/删除时性能显著下降。</p>
+<p><code>eMBP</code>指Multi Box
+Pruning，将世界划分为若干区域，每个区域单独进行基数排序，从而进行重叠检测。适用于移动物体较多的场景，在所有物体都移动或大量插入/删除时通常比<code>eSAP</code>更快。但需要预定义子划分数，设子划分数为N，区域数量为N*N（在水平面上做二维划分），过大会影响性能和内存；当很多物体静止时不如<code>eSAP</code>。</p>
+<p><code>eGPU</code>依赖GPU硬件加速实现，需要硬件支持SM3.0或更新标准。</p>
+<h1 id="如何配置mbp">如何配置<code>MBP</code></h1>
+<p><code>SAP</code>不需要特别配置，<code>MBP</code>则需要配置。</p>
+<p>Project Settings窗口的默认Broadphase配置全局生效，World
+Settings窗口的Broadphase配置可以覆盖默认配置，只对当前关卡生效。</p>
+<p>可配置项对应<code>AWorldSettings</code>的<code>FBroadphaseSettings AWorldSettings::BroadphaseSettings</code>的成员变量。</p>
+<p>Use MBPOn Client — 对应bUseMBPOnClient</p>
+<p>Use MBPOn Server — 对应bUseMBPOnServer</p>
+<p>Use MBPOuter Bounds — 对应bUseMBPOuterBounds，选择是否设置MBPOuter
+Bounds</p>
+<p>MBPBounds：</p>
+<p>Min (X, Y, Z) — 对应MBPBounds.Min</p>
+<p>Max (X, Y, Z) — 对应MBPBounds.Max</p>
+<p>MBPOuter Bounds：</p>
+<p>Min (X, Y, Z) — 对应MBPOuterBounds.Min</p>
+<p>Max (X, Y, Z) — 对应MBPOuterBounds.Max</p>
+<p>MBPBounds和MBPOuter Bounds之间会创建四个区域，如图示：</p>
+<p>（PhysX只提供了添加区域的接口，是UE自己设计的）</p>
+<p><img src="https://bit704.oss-cn-beijing.aliyuncs.com/image/4round1.png" srcset="/img/loading.gif" lazyload style="zoom:25%;" /></p>
+<p>MBPNum Subdivs — 对应MBPNumSubdiv，即划分数。</p>
+<p>在控制台配置：</p>
+<p>p.ForceMbpClient：强制在客户端场景使用MBP。</p>
+<p>p.ForceMbpServer：强制在服务器场景使用MBP。</p>
+<p>p.OverrideMbpNumSubdivisionsClient：覆盖客户端MBP子划分数（非 0
+才生效）。</p>
+<p>p.OverrideMbpNumSubdivisionsServer：覆盖服务器MBP子划分数（同上）。</p>
+<p>（这些CVar只在场景创建时生效，运行时修改需要重建/重新创建场景才能应用）</p>
+<p>（p.ForceMbpClient和p.ForceMbpServer没有作用）</p>
+<h1 id="算法流程">算法流程</h1>
+<p>PhysX将工作拆分为Task，每个Task对应一个函数，入参为下一个Task。通过定义这些Task之间的先后依赖关系，由线程池中的空闲线程去动态执行。</p>
+<p><code>Sc::Scene::rigidBodyNarrowPhase</code>内创建Task链条：
+<code>mBroadPhase</code> -&gt; <code>mPostBroadPhase</code> -&gt;
+<code>mPostBroadPhase2</code> -&gt; <code>mPostBroadPhase3</code> -&gt;
+<code>*continuation</code>。<code>*continuation</code>为<code>rigidBodyNarrowPhase</code>函数入参，由其调用者传入，即Task<code>mRigidBodyNarrowPhase</code>执行完后的下一个Task。</p>
 <blockquote>
-<p><a
-target="_blank" rel="noopener" href="https://dev.epicgames.com/documentation/zh-cn/unreal-engine/fbx-static-mesh-pipeline-in-unreal-engine">虚幻引擎中的FBX静态网格体管线</a></p>
+<p><code>mBroadPhase</code>、<code>mPostBroadPhase</code>、<code>mPostBroadPhase2</code>、<code>mPostBroadPhase3</code>均为由<code>Cm::DelegateTask</code>绑定到指定函数的Task。</p>
 </blockquote>
-<p>在3D建模软件（如Maya、3ds
-Max、Blender）中为模型手动创建自定义碰撞体，并通过特定前缀命名，导出到FBX文件后再导入到UE，UE会自动识别这些碰撞体并将其绑定到对应（除前缀外命名相同）的静态网格体上，无需在UE中手动添加或调整碰撞体。这种自定义碰撞体称为简单碰撞体，复杂碰撞体即将模型的三角形网格作为碰撞体。</p>
-<h2 id="命名规则">命名规则</h2>
-<table>
-
-<thead>
-<tr>
-<th><strong>命名规则</strong></th>
-<th><strong>说明</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>UBX_[RenderMeshName]_##</code></td>
-<td>盒体（Box）必须使用规则的长方体3D对象创建。不能移动顶点或对其进行任何变形，否则无法正常工作。</td>
-</tr>
-<tr>
-<td><code>UCP_[RenderMeshName]_##</code></td>
-<td>胶囊体（Capsule）必须是两端带半球的圆柱体。分段数不需要太多（8段即可），因为会被转换为真正的胶囊体用于碰撞。和盒体一样不应随意移动顶点。</td>
-</tr>
-<tr>
-<td><code>USP_[RenderMeshName]_##</code></td>
-<td>球体（Sphere）分段数不需要太多（8段即可），因为会被转换为真正的球体用于碰撞。和盒体一样不应随意移动顶点。</td>
-</tr>
-<tr>
-<td><code>UCX_[RenderMeshName]_##</code></td>
-<td>凸包（Convex）任意完全封闭的凸3D形状。盒体也可以是凸包。下图展示了什么是凸包，什么不是。</td>
-</tr>
-</tbody>
-</table>
-<p><code>MCDCX_</code>前缀等同于<code>UCX_</code>，意为Multiple Convex
-Decomposition
-Collision，通常用于区分第三方自动分解工具（如Maya插件、Havok工具等）生成的多个凸包碰撞体，表示这些凸包是通过“多凸分解算法”自动生成的。</p>
+<p><code>mBroadPhase</code>对应函数<code>Sc::Scene::broadPhase</code>，执行Board
+Phase碰撞检测。它调用
+<code>mAABBManager-&gt;updateAABBsAndBP</code>，更新所有动态物体的
+AABB（轴对齐包围盒），并将这些变化传递给底层的Board
+Phase算法（SAP或MBP），从而计算出新产生的重叠对和消失的重叠对。</p>
 <blockquote>
-<p>源码位于<code>FFbxImporter::ImportCollisionModels</code>。</p>
+<p><code>updateAABBsAndBP</code>处理AABB更新后调用<code>finalizeUpdate</code>，<code>finalizeUpdate</code>调用<code>mBroadPhase-&gt;update(const PxU32 numCpuTasks, PxcScratchAllocator* scratchAllocator, const BroadPhaseUpdateData&amp; updateData, physx::PxBaseTask* continuation, physx::PxBaseTask* narrowPhaseUnblockTask)</code>（<code>BroadPhase&amp; mBroadPhase</code>是<code>BroadPhaseSap</code>或<code>BroadPhaseMBP</code>实例）。</p>
+<p>在使用MBP的情况下，在其中创建Task链条：<code>mMBPUpdateWorkTask</code>-&gt;<code>mMBPPostUpdateWorkTask</code>-&gt;
+<code>*continuation</code>，<code>mMBPUpdateWorkTask</code>、<code>mMBPPostUpdateWorkTask</code>均为由<code>Cm::Task</code>继承而来的Task，分别调用函数<code>update</code>，<code>postUpdate</code>（入参均为PxBaseTask*），对应Unreal
+Insights中的性能统计项<code>BpMBP.updateWork</code>、<code>BpMBP.postUpdateWork</code>。</p>
+<p>使用SAP同上。</p>
 </blockquote>
-<h2 id="注意事项">注意事项</h2>
-<ol type="1">
-<li><p>同样的形状，命名不同，UE底层采用的碰撞体类型和算法不同，性能也会有差异。建议能用<code>UBX_</code>、<code>USP_</code>、<code>UCP_</code>等简单形状时优先使用，只有需要复杂凸形时才用<code>UCX_</code>。例如，如果将长方体命名为<code>UCX_</code>，网格会被解析为“凸包”，并通过<code>UBodySetup::AggGeom.ConvexElems</code>存，而不是通过<code>UBodySetup::AggGeom.BoxElems</code>存。</p></li>
-<li><p>引擎对命名的识别优先级 1.UCX（MCDCX）2.UBX 3.USP
-4.UCP，按优先级顺序进行识别（识别内容不包含下划线），识别到命名即进行导入（即跳过低优先级的命名），<strong>就算命名不在开头也会被识别</strong>，因此<code>UBX_UCX_SM_Example</code>会被识别为UCX。所以不要混用多个命名。</p></li>
-<li><p>命名不代表一定会生成对应类型的碰撞体，如果无法转换，则不会生成碰撞体。例如，fbx中的矩形碰撞体若以USP命名，导入引擎后不会生成球体碰撞体。导入时若不勾选“生成缺失碰撞”选项，在无法生成碰撞体的情况下就不会有碰撞。</p></li>
-<li><p>命名规则中的<code>RenderMeshName</code>部分必须与3D应用程序中和碰撞网格关联的渲染网格的名称相同。如果在3D应用程序中有一个名为<code>Tree_01</code>的渲染网格，则碰撞网格应与该网格一起位于场景中，并命名为
-<code>UCX_Tree_01</code>，然后与渲染网格一起导出到同一个FBX文件。如果一个网格需要多个碰撞体可以使用更多标识符扩展它们的名称，例如：<code>UCX_Tree_01_00</code>、<code>UCX_Tree_01_01</code>、<code>UCX_Tree_01_02</code>等。它们都将关联为该网格的碰撞体。导入.FBX文件到UE编辑器中，它会找到碰撞网格，将其从渲染网格中删除，并将其转换为碰撞模型。</p></li>
-<li><p>可以在Max或Maya中自行将碰撞模型分解为凸包。如果对象的碰撞由多个凸包定义，最好让彼此不相交。</p></li>
-</ol>
-<h2 id="相关类介绍">相关类介绍</h2>
-<p>静态网格体：<strong>UObject</strong>
--&gt;<strong>UStreamableRenderAsset</strong>
-[IInterface_CollisionDataProvider，IInterface_AssetUserData]
--&gt;<strong>UStaticMesh。</strong>碰撞信息保存在自身的成员<code>class UBodySetup* BodySetup</code>。例如凸包碰撞保存在<code>BodySetup-&gt;AggGeom.ConvexElems</code>中。</p>
-<p>骨骼网格体：<strong>UObject</strong>
--&gt;<strong>UStreamableRenderAsset</strong>
-[IInterface_CollisionDataProvider，IInterface_AssetUserData，INodeMappingProviderInterface]
--&gt;<strong>USkeletalMesh。</strong>碰撞信息保存在对应的<code>USkinnedMeshComponent</code>的成员<code>class UPhysicsAsset* PhysicsAssetOverride</code>的成员<code>TArray&lt;USkeletalBodySetup*&gt; SkeletalBodySetups</code>。</p>
-<p>碰撞信息：<strong>UObject</strong> -&gt;
-<strong>UBodySetupCore</strong> -&gt; <strong>UBodySetup</strong> -&gt;
-<strong>USkeletalBodySetup</strong>。</p>
-<h2 id="引擎侧碰撞拟合算法">引擎侧碰撞拟合算法</h2>
-<p>（通过静态网格体编辑界面的顶部菜单栏Collision-&gt;"Add XXX Simplified
-Colllision"调用，函数名为<code>GenerateXXXAsSimpleCollision</code>）</p>
-<p>盒体拟合：取包围盒。即遍历所有顶点，逐个加入<code>FBox</code>。</p>
-<p>球体拟合：基于Ritter算法和AABB中心算法计算两个球体，选择半径更小的。Ritter算法对于三条坐标轴计算每个轴上的最远点对，再取这三个最远点对中最远的点对的中点作为球心，初始半径取球心到所有最远点对的最大值，遍历所有顶点，若顶点不在球内，按方向将球心平移，同时更新球心和半径，使新球既包含原来球也包含该点。AABB中心算法取包围盒的中心作为球心，遍历所有顶点，更新半径。</p>
-<p>胶囊体拟合：类似Ritter算法，但不更新中心。</p>
-<p>k-DOP（k-Directional Oriented
-Polytope）拟合：输入预定义在<code>GeomFitUtils.h</code>中的表示方向的单位向量数组（例如<code>const FVector KDopDir10X[10]</code>），拟合凸包碰撞。</p>
+<p><code>mPostBroadPhase</code>对应函数<code>Sc::Scene::postBroadPhase</code>，通知Narrow
+Phase上下文Board
+Phase已完成，调用<code>mAABBManager-&gt;postBroadPhase</code>获取并处理Board
+Phase产生的重叠对结果，清理已改变的 AABB 管理器句柄映射，调用
+<code>finishBroadPhase</code>开始创建新的交互对象（Interactions）和接触管理器（Contact
+Managers）。</p>
+<p><code>mPostBroadPhase2</code>对应函数:<code>Sc::Scene::postBroadPhaseStage2</code>，处理因失去接触而需要唤醒的物体，释放预分配的接触管理器和形状交互对象的内存回池。</p>
+<blockquote>
+<p>PhysX
+使用“岛屿”来分组相互作用的物体。如果一个岛屿中的所有物体都静止不动且能量低于阈值，整个岛屿会进入睡眠状态以节省
+CPU/GPU 计算资源。</p>
+<p>例如，一开始物体A和B相互堆叠，A在B的下面，都静止并进入睡眠状态（属于同一个睡眠岛屿）。随后，A受到了一个瞬时力，导致A醒来并开始移动，A与B失去接触。</p>
+<p>此时如果不唤醒B，B仍然认为自己是睡眠岛屿的一部分。但在下一帧，由于A已经移开，B本应因为重力开始下落，却没有下落，导致bug。</p>
+<p>因此，必须唤醒B，以便在下一帧重新计算其受力情况和运动状态。</p>
+</blockquote>
+<p><code>mPostBroadPhase3</code>对应函数
+<code>Sc::Scene::postBroadPhaseStage3</code>，调用<code>finishBroadPhaseStage2</code>
+完成最后的清理工作。</p>
+<h2 id="sap">SAP</h2>
+<p><code>BroadPhaseSap::update</code>调用<code>batchRemove</code>移除所有待移除的对象，分别在三个轴上更新排序。更新时只处理移动过的对象，采用插入排序。</p>
+<p><code>BroadPhaseSap::postUpdate</code>收集三个轴上的新增对和重叠对。</p>
+<h2 id="mbp">MBP</h2>
+<p>PhysX提供了添加区域的接口<code>createRegionsFromWorldBounds</code>、<code>addBroadPhaseRegion</code>，UE在<code>FPhysScene_PhysX::InitPhysScene</code>函数内根据用户配置的边界和子划分数生成区域。</p>
+<p>PhysX定义最大区域数量为256，<code>#define MAX_NB_MBP  256</code>，因此，UE对配置的<code>NumSubdivisions</code>（默认为2）clamp到1到16，用于将<code>MBPBounds</code>划分为区域。在<code>bUseMBPOuterBounds</code>为true的情况下，<code>NumSubdivisions</code>最高仅为15，因为在<code>MBPBounds</code>和<code>MBPOuterBounds</code>之间会生成四个区域作为Outer区域。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-comment">// Must have at least one and no more than 256 regions, subdivision is num^2 so only up to 16</span><br>NumSubdivisions    = FMath::<span class="hljs-built_in">Clamp</span>&lt;uint32&gt;(NumSubdivisions, <span class="hljs-number">1</span>, BroadphaseSettings.bUseMBPOuterBounds ? <span class="hljs-number">15</span> : <span class="hljs-number">16</span>);<br></code></pre></td></tr></table></figure>
+<p><code>BroadPhaseMBP::update</code>（仅在多线程模式下有操作，否则在<code>setUpdateData</code>中同步完成碰撞检测）调用<code>mMBP-&gt;findOverlapsMT(mGroups)</code>遍历所有区域，调用每个区域内部的重叠检测。在此之前，<code>Region::prepareOverlapsMT</code>已经对静态/动态物体按X轴最小值进行基数排序。<code>findOverlapsMT</code>使用<code>doCompleteBoxPruning</code>检测动态-动态对和动态-睡眠动态对，<code>doBipartiteBoxPruing</code>检测动态-静态对。</p>
+<p><code>BroadPhaseMBP::postUpdate</code>重置每个区域的"已更新"计数器，调用<code>finalize</code>统计新增、持续、消失的重叠对。</p>
 
                 
               </div>
@@ -398,8 +406,8 @@ Polytope）拟合：输入预定义在<code>GeomFitUtils.h</code>中的表示方
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>UE盒体碰撞体非均匀缩放问题</div>
-      <div>https://tech.reddish.fun/Article/UE-Non-Uniform-Scale-Issue/</div>
+      <div>UE PhysX BroadPhase</div>
+      <div>https://tech.reddish.fun/Notebook/UE-PhysX-BroadPhase/</div>
     </div>
     <div class="license-meta">
       
@@ -411,7 +419,7 @@ Polytope）拟合：输入预定义在<code>GeomFitUtils.h</code>中的表示方
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2025年8月10日</div>
+          <div>2025年4月18日</div>
         </div>
       
       
@@ -443,9 +451,9 @@ Polytope）拟合：输入预定义在<code>GeomFitUtils.h</code>中的表示方
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/Article/UE-Optimization/" title="UE性能优化实践">
+                      <a href="/Article/UE-Non-Uniform-Scale-Issue/" title="UE盒体碰撞体非均匀缩放问题">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">UE性能优化实践</span>
+                        <span class="hidden-mobile">UE盒体碰撞体非均匀缩放问题</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -453,8 +461,8 @@ Polytope）拟合：输入预定义在<code>GeomFitUtils.h</code>中的表示方
                   <article class="post-next col-6">
                     
                     
-                      <a href="/Notebook/UE-PhysX-BroadPhase/" title="UE PhysX BroadPhase">
-                        <span class="hidden-mobile">UE PhysX BroadPhase</span>
+                      <a href="/Article/CPP-IIFE/" title="C++ IIFE">
+                        <span class="hidden-mobile">C++ IIFE</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
