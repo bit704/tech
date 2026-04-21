@@ -19,7 +19,7 @@
     <meta name="description" content="碰撞检测">
 <meta property="og:type" content="article">
 <meta property="og:title" content="UE PhysX BroadPhase">
-<meta property="og:url" content="https://tech.reddish.fun/Notebook/UE-PhysX-BroadPhase/index.html">
+<meta property="og:url" content="https://tech.reddish.fun/Article/UE-PhysX-BroadPhase/index.html">
 <meta property="og:site_name" content="Homeworld">
 <meta property="og:description" content="碰撞检测">
 <meta property="og:locale">
@@ -353,14 +353,14 @@ CPU/GPU 计算资源。</p>
 <code>Sc::Scene::postBroadPhaseStage3</code>，调用<code>finishBroadPhaseStage2</code>
 完成最后的清理工作。</p>
 <h2 id="sap">SAP</h2>
-<p><code>BroadPhaseSap::update</code>调用<code>batchRemove</code>移除所有待移除的对象，分别在三个轴上更新排序。更新时只处理移动过的对象，采用插入排序。</p>
-<p><code>BroadPhaseSap::postUpdate</code>收集三个轴上的新增对和重叠对。</p>
+<p><code>BroadPhaseSap::update</code>调用<code>batchRemove</code>移除所有待移除的对象，分别在三个轴上更新排序。更新时只处理移动过的对象，采用插入排序。在三个轴上都重叠的AABB即重叠。</p>
+<p><code>BroadPhaseSap::postUpdate</code>收集新增和消失的重叠对。</p>
 <h2 id="mbp">MBP</h2>
 <p>PhysX提供了添加区域的接口<code>createRegionsFromWorldBounds</code>、<code>addBroadPhaseRegion</code>，UE在<code>FPhysScene_PhysX::InitPhysScene</code>函数内根据用户配置的边界和子划分数生成区域。</p>
 <p>PhysX定义最大区域数量为256，<code>#define MAX_NB_MBP  256</code>，因此，UE对配置的<code>NumSubdivisions</code>（默认为2）clamp到1到16，用于将<code>MBPBounds</code>划分为区域。在<code>bUseMBPOuterBounds</code>为true的情况下，<code>NumSubdivisions</code>最高仅为15，因为在<code>MBPBounds</code>和<code>MBPOuterBounds</code>之间会生成四个区域作为Outer区域。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-comment">// Must have at least one and no more than 256 regions, subdivision is num^2 so only up to 16</span><br>NumSubdivisions    = FMath::<span class="hljs-built_in">Clamp</span>&lt;uint32&gt;(NumSubdivisions, <span class="hljs-number">1</span>, BroadphaseSettings.bUseMBPOuterBounds ? <span class="hljs-number">15</span> : <span class="hljs-number">16</span>);<br></code></pre></td></tr></table></figure>
-<p><code>BroadPhaseMBP::update</code>（仅在多线程模式下有操作，否则在<code>setUpdateData</code>中同步完成碰撞检测）调用<code>mMBP-&gt;findOverlapsMT(mGroups)</code>遍历所有区域，调用每个区域内部的重叠检测。在此之前，<code>Region::prepareOverlapsMT</code>已经对静态/动态物体按X轴最小值进行基数排序。<code>findOverlapsMT</code>使用<code>doCompleteBoxPruning</code>检测动态-动态对和动态-睡眠动态对，<code>doBipartiteBoxPruing</code>检测动态-静态对。</p>
-<p><code>BroadPhaseMBP::postUpdate</code>重置每个区域的"已更新"计数器，调用<code>finalize</code>统计新增、持续、消失的重叠对。</p>
+<p><code>BroadPhaseMBP::update</code>（仅在多线程模式下有操作，否则在<code>setUpdateData</code>中同步完成碰撞检测）调用<code>mMBP-&gt;findOverlapsMT(mGroups)</code>遍历所有区域，调用每个区域内部的重叠检测。在此之前，<code>Region::prepareOverlapsMT</code>已经对静态/动态物体按X轴最小值进行基数排序。<code>findOverlapsMT</code>使用<code>doCompleteBoxPruning</code>检测动态-动态对和动态-睡眠动态对是否重叠，<code>doBipartiteBoxPruing</code>检测动态-静态对是否重叠。</p>
+<p><code>BroadPhaseMBP::postUpdate</code>重置每个区域的"已更新"计数器，调用<code>finalize</code>收集新增、持续、消失的重叠对。</p>
 
                 
               </div>
@@ -407,7 +407,7 @@ CPU/GPU 计算资源。</p>
   <div class="license-box my-3">
     <div class="license-title">
       <div>UE PhysX BroadPhase</div>
-      <div>https://tech.reddish.fun/Notebook/UE-PhysX-BroadPhase/</div>
+      <div>https://tech.reddish.fun/Article/UE-PhysX-BroadPhase/</div>
     </div>
     <div class="license-meta">
       
