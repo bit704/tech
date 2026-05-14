@@ -274,10 +274,8 @@
 <h3 id="char的具体实现是什么">char的具体实现是什么❔</h3>
 <p>有些C编译器把char实现为有符号类型，即char可表示的范围是-128-127。有些C编译器把char实现为无符号类型，即char可表示的范围是0-255。</p>
 <p>如不想由编译器决定，根据C90标准，C语言允许在关键字char前面使用signed或unsigned。</p>
-<h3 id="何时刷新缓冲区">何时刷新缓冲区❔</h3>
-<p>当缓冲区满、遇到换行字符或需要输入的时候（从缓冲区把数据发送到屏幕或文件被称为刷新缓冲区）。</p>
 <h3 id="sizeof后面是否要加圆括号">sizeof后面是否要加圆括号❔</h3>
-<p>运算对象是类型时，圆括号必不可少；但是对于特定量，可有可无。</p>
+<p>运算对象是类型时，圆括号必不可少；但是对于表达式或变量，可有可无。</p>
 <h3
 id="sizeof返回值与实现有关如何打印">sizeof返回值与实现有关，如何打印❔</h3>
 <p>为了可移植性，stddef.h头文件（在包含stdio.h头文件时已包含其中）把<code>size_t</code>定义成系统使用sizeof返回的类型，这被称为底层类型（underlying
@@ -290,15 +288,9 @@ id="为什么有的c代码用and代替">为什么有的C代码用<code>and</code
 <p>注意：在C++中，备选拼写是<strong>关键字</strong>；已弃用iso646.h或
 C++
 等效的ciso646头文件。有<code>and</code>、<code>or</code>、<code>and_eq</code>、<code>or_eq</code>、<code>xor</code>、<code>xor_eq</code>、<code>not</code>、<code>not_eq</code>、<code>bitand</code>、<code>bitor</code>。</p>
-<h3 id="指针之间可以相互赋值吗">指针之间可以相互赋值吗❔</h3>
-<p>不可以，指针之间的赋值比数值类型之间的赋值要严格。不用类型转换就可以把
-int 类型的值赋给double类型的变量，但是两个类型的指针不能这样做。</p>
 <h3 id="什么是复合字面量">什么是复合字面量❔</h3>
 <p>C99新增了复合字面量（compound literal）。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> diva[<span class="hljs-number">2</span>] = &#123;<span class="hljs-number">10</span>, <span class="hljs-number">20</span>&#125;;<br><span class="hljs-type">int</span> *pt1;<br>pt1 = (<span class="hljs-type">int</span> [<span class="hljs-number">2</span>])&#123;<span class="hljs-number">10</span>, <span class="hljs-number">20</span>&#125;; <span class="hljs-comment">// 复合字面量，[]内数字可省略</span><br></code></pre></td></tr></table></figure>
-<h3
-id="空白字符分隔的字符串字面量会自动串联吗">空白字符分隔的字符串字面量会自动串联吗❔</h3>
-<p>会。</p>
 <h3 id="数组名是指针常量吗">数组名是指针常量吗❔</h3>
 <p>数组名和指针很像，并且不能进行赋值或自增，但它不是指针常量。</p>
 <p>数组名的类型是<code>type[size]</code>，不是<code>type* const</code>。对数组取值，得到的是<code>type(*)[size]</code>。</p>
@@ -314,10 +306,10 @@ id="空白字符分隔的字符串字面量会自动串联吗">空白字符分�
 扩展名）。头文件会依次包含其他头文件，所以会包含多个单独的物理文件。但是，C预处理实际上是用包含的头文件内容替换#include指令。所以源代码文件和所有的头文件都看成是一个包含信息的单独文件，这个文件被称为<strong>翻译单元</strong>（translation
 unit）。描述一个具有<strong>文件作用域</strong>的变量时，它的实际可见范围是整个翻译单元。如果程序由多个源代码文件组成，那么该程序也将由多个翻译单元组成。每个翻译单元均对应一个源代码文件和它所包含的文件。</p>
 <h3 id="c语言有哪些存储类别说明符">C语言有哪些存储类别说明符❔</h3>
-<p>C语言有6个关键字作为存储类别说明符：auto、register、static、extern、_Thread_local和typedef。typedef关键字与任何内存存储无关，把它归于此类有一些语法上的原因。尤其是，在绝大多数情况下，不能在声明中使用多个存储类别说明符，所以这意味着不能使用多个存储类别说明符作为typedef的一部分。唯一例外的是_Thread_local，它可以和static或extern一起使用。</p>
+<p>C语言有6个关键字作为存储类别说明符：<code>auto</code>、<code>register</code>、<code>static</code>、<code>extern</code>、<code>_Thread_local</code>和<code>typedef</code>。typedef关键字与任何内存存储无关，把它归于此类有一些语法上的原因。尤其是，在绝大多数情况下，不能在声明中使用多个存储类别说明符，所以这意味着不能使用多个存储类别说明符作为typedef的一部分。唯一例外的是_Thread_local，它可以和static或extern一起使用。</p>
 <h3
 id="为什么可以在一条声明中多次使用同一个限定符">为什么可以在一条声明中多次使用同一个限定符❔</h3>
-<p>C99为类型限定符增加了一个新属性：幂等（idempotent）。</p>
+<p>C99为类型限定符增加了一个新属性：幂等（idempotent）。<code>const</code>、<code>volatile</code>、<code>restrict</code>、<code>_Atomic</code>。</p>
 <h3
 id="在文件间共享const变量有什么方法">在文件间共享const变量有什么方法❔</h3>
 <p>可以采用两个策略。</p>
@@ -347,9 +339,6 @@ target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/cpp/cpp/e
 <li><p><code>[]</code>和<code>()</code>的优先级相同，都是从左往右结合。</p>
 <p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> (*rusks)[<span class="hljs-number">10</span>]; <span class="hljs-comment">// 是一个指向数组的指针，该数组内含10个int类型的元素</span><br><span class="hljs-type">int</span> *foo[<span class="hljs-number">3</span>][<span class="hljs-number">4</span>]; <span class="hljs-comment">// foo是一个内含3个元素的数组，其中每个元素是由4个指向int的指针组成的数组</span><br></code></pre></td></tr></table></figure></p></li>
 </ol>
-<h3
-id="函数指针和函数名可以互换使用吗">函数指针和函数名可以互换使用吗❔</h3>
-<p>可以。</p>
 <h3 id="c可以使用泛型吗">C可以使用泛型吗❔</h3>
 <p>可以。利用C11新增的泛型选择表达式定义一个泛型宏，根据参数类型选择最合适的数学函数版本。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> SQRT(X) _Generic((X), long double: sqrtl,  default: sqrt, float: sqrtf)(X)</span><br></code></pre></td></tr></table></figure>
