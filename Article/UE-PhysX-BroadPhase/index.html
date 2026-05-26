@@ -362,8 +362,6 @@ CPU/GPU 计算资源。</p>
 <p><code>BroadPhaseMBP::update</code>（仅在多线程模式下有操作，否则在<code>setUpdateData</code>中同步完成碰撞检测）调用<code>mMBP-&gt;findOverlapsMT(mGroups)</code>遍历所有区域，调用每个区域内部的重叠检测。在此之前，<code>Region::prepareOverlapsMT</code>已经对静态/动态物体按X轴最小值进行基数排序。<code>findOverlapsMT</code>使用<code>doCompleteBoxPruning</code>检测动态-动态对和动态-睡眠动态对是否重叠，<code>doBipartiteBoxPruing</code>检测动态-静态对是否重叠。</p>
 <p><code>BroadPhaseMBP::postUpdate</code>重置每个区域的"已更新"计数器，调用<code>finalize</code>收集新增、持续、消失的重叠对。</p>
 <h1 id="算法分析">算法分析</h1>
-<h1 id="physx-宽相位算法对比sap-vs-mbp">PhysX 宽相位算法对比：SAP vs
-MBP</h1>
 <blockquote>
 <p>基于 NVIDIA PhysX 3.4
 源码（<code>Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/</code>）的实现分析。</p>
