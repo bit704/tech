@@ -224,7 +224,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          4.3k 字
+          24k 字
         
       </span>
     
@@ -361,6 +361,565 @@ CPU/GPU 计算资源。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-comment">// Must have at least one and no more than 256 regions, subdivision is num^2 so only up to 16</span><br>NumSubdivisions    = FMath::<span class="hljs-built_in">Clamp</span>&lt;uint32&gt;(NumSubdivisions, <span class="hljs-number">1</span>, BroadphaseSettings.bUseMBPOuterBounds ? <span class="hljs-number">15</span> : <span class="hljs-number">16</span>);<br></code></pre></td></tr></table></figure>
 <p><code>BroadPhaseMBP::update</code>（仅在多线程模式下有操作，否则在<code>setUpdateData</code>中同步完成碰撞检测）调用<code>mMBP-&gt;findOverlapsMT(mGroups)</code>遍历所有区域，调用每个区域内部的重叠检测。在此之前，<code>Region::prepareOverlapsMT</code>已经对静态/动态物体按X轴最小值进行基数排序。<code>findOverlapsMT</code>使用<code>doCompleteBoxPruning</code>检测动态-动态对和动态-睡眠动态对是否重叠，<code>doBipartiteBoxPruing</code>检测动态-静态对是否重叠。</p>
 <p><code>BroadPhaseMBP::postUpdate</code>重置每个区域的"已更新"计数器，调用<code>finalize</code>收集新增、持续、消失的重叠对。</p>
+<h1 id="算法分析">算法分析</h1>
+<h1 id="physx-宽相位算法对比sap-vs-mbp">PhysX 宽相位算法对比：SAP vs
+MBP</h1>
+<blockquote>
+<p>基于 NVIDIA PhysX 3.4
+源码（<code>Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/</code>）的实现分析。</p>
+</blockquote>
+<h2 id="总体设计对比">1. 总体设计对比</h2>
+<table>
+
+<thead>
+<tr>
+<th>维度</th>
+<th>SAP（<code>BroadPhaseSap</code>）</th>
+<th>MBP（<code>BroadPhaseMBP</code> / <code>MBP</code> /
+<code>Region</code>）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>核心思想</td>
+<td>对 3
+个轴各自维护一份按浮点值排序的端点表（min/max），在帧间通过<strong>冒泡式增量插入</strong>保持有序，并在端点
+swap 时维护活跃 pair 集合</td>
+<td>把世界切成若干 <code>Region</code>，每个 Region
+内部独立执行一次"主轴排序 + Sweep（Complete/Bipartite Box Pruning）"，跨
+Region 由对象同时归属多个 Region 来覆盖</td>
+</tr>
+<tr>
+<td>是否需要世界边界</td>
+<td><strong>否</strong>，无限世界</td>
+<td><strong>是</strong>，必须由用户通过 <code>addRegion</code> 注册
+region，未覆盖区域的对象会进入"out-of-bounds" 列表（见
+<code>MBP::addToOutOfBoundsArray</code>）</td>
+</tr>
+<tr>
+<td>排序粒度</td>
+<td>全局 3 个轴端点链表（共 <code>2N + 2</code> 个
+sentinel-保护的元素）</td>
+<td>区域内的"主轴 minX" 单轴排序（基数排序 RadixSort）</td>
+</tr>
+<tr>
+<td>帧间状态</td>
+<td><strong>强增量</strong> —— 上一帧 pair 列表直接保留，本帧只处理 swap
+引发的 add/remove</td>
+<td><strong>半增量</strong> —— Pair 列表保留并通过
+<code>isNew/isUpdated</code> 标记，几何上每帧重新做 box pruning</td>
+</tr>
+<tr>
+<td>数据结构</td>
+<td>端点数组 + 双向链表（<code>mListPrev/mListNext</code>）+ 活跃区间
+<code>BroadPhaseActivityPocket</code></td>
+<td><code>MBPEntry</code> 表 + <code>mStaticBoxes/mDynamicBoxes</code>
+SoA-like 数组 + Radix sort 缓冲</td>
+</tr>
+<tr>
+<td>Pair 容器</td>
+<td><code>SapPairManager</code>（开放寻址 hash 表 + 状态位
+<code>PAIR_INARRAY/PAIR_REMOVED/PAIR_NEW</code>）</td>
+<td><code>MBP_PairManager</code>（开放寻址 hash 表 +
+<code>isNew/isUpdated</code> 标志）</td>
+</tr>
+<tr>
+<td>AABB 编码</td>
+<td>32-bit <code>ValType</code>，将 float 通过 <code>encodeFloat</code>
+编码成可整数比较的值，min 偶数对齐 / max 奇数对齐</td>
+<td>同样使用 <code>encodeFloat</code>，但右移 1
+位（<code>&gt;&gt;1</code>）以保留 31 位精度同时让 min/max
+区分；可选启用 <code>MBP_SIMD_OVERLAP</code> 的
+<code>SIMD_AABB</code>（XMXMYZ 布局）</td>
+</tr>
+<tr>
+<td>静态 vs 动态</td>
+<td>不区分（所有对象都在统一的 3 轴端点表里），通过
+<code>mBoxGroups</code> 过滤</td>
+<td><strong>显式区分</strong>：每个 Region 维护
+<code>mStaticBoxes</code> +
+<code>mDynamicBoxes</code>，静态盒子可以做"延迟一次性排序"（<code>staticSort</code>）</td>
+</tr>
+<tr>
+<td>并行性</td>
+<td>3
+个轴并行（<code>BroadPhaseBatchUpdateWorkTask mBatchUpdateTasks[3]</code>）</td>
+<td>每个 Region 之间天然并行（<code>Region::findOverlapsMT</code>）</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>大量休眠物体、世界规模未知或动态扩张</td>
+<td>大量同时运动物体、大型/规则世界、需要多线程扩展</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="sap-算法实现剖析">2. SAP 算法实现剖析</h2>
+<h3 id="数据结构">2.1 数据结构</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs 163:178:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseSap.h">SapBox1D*                   mBoxEndPts[3];          //Position of box min/max in sorted arrays of end pts (needs to have mBoxesCapacity).<br>ValType*                    mEndPointValues[3];     //Sorted arrays of min and max box coords<br>BpHandle*                   mEndPointDatas[3];      //Corresponding owner id and isMin/isMax for each entry in the sorted arrays of min and max box coords.<br><br>PxU8*                       mBoxesUpdated;  <br>BpHandle*                   mSortedUpdateElements;  <br>BroadPhaseActivityPocket*   mActivityPockets;<br>BpHandle*                   mListNext;<br>BpHandle*                   mListPrev;<br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>mEndPointValues[axis]</code>：长度
+<code>2 * boxes + 2</code>（前后各一个 sentinel），存放每个 AABB 的
+min/max 端点编码值。</li>
+<li><code>mEndPointDatas[axis]</code>：与值数组一一对应，低 1 bit 表示
+isMax，高位是 <code>owner_box_id</code>（见
+<code>setData/getOwner/isMax</code>）。</li>
+<li><code>mBoxEndPts[axis][box]</code>：从 box ID 反查它在端点表中的
+min/max 索引（<code>SapBox1D::mMinMax[2]</code>），用于 O(1) 取出某 box
+在某轴上的位置。</li>
+<li><code>mListPrev/mListNext</code>：以端点索引为节点的双向链表，被增量更新阶段用来"先逻辑挪动、再统一回写数组"，避免
+swap 时大量重复访存。</li>
+<li><code>BroadPhaseActivityPocket</code>：一段连续被改动过的端点索引区间
+<code>[mStartIndex, mEndIndex]</code>，用于把链表式 swap
+的结果<strong>只在受影响的子区间内</strong>回写到
+<code>mEndPointValues/Datas</code> 数组。</li>
+<li><code>SapPairManager</code>（<code>BpBroadPhaseSapAux.h</code>）：哈希表
++ 状态位，使一次 <code>AddPair</code> / <code>RemovePair</code> 是
+O(1)，并能区分 "本帧新加 / 本帧删除 / 之前就存在"。</li>
+</ul>
+<p>端点编码用了一个巧妙的 trick：min
+编码后强制偶数（<code>&amp; ~1</code>），max
+强制奇数（<code>| 1</code>），这样在相等端点处的排序具有稳定的"max 排在
+min 之后"语义（见
+<code>setMinSentinel</code>、<code>encodeMin/encodeMax</code>）。</p>
+<h3 id="一帧的执行流程">2.2 一帧的执行流程</h3>
+<p>入口：<code>BroadPhaseSap::update(...)</code>，详细顺序：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs 457:486:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseSap.cpp">void BroadPhaseSap::update(const PxU32 numCpuTasks, PxcScratchAllocator* scratchAllocator, const BroadPhaseUpdateData&amp; updateData, PxBaseTask* continuation, PxBaseTask* narrowPhaseUnblockTask)<br>&#123;<br>    ...<br>    const bool success = setUpdateData(updateData);<br><br>    if(success)<br>    &#123;<br>        mScratchAllocator = scratchAllocator;<br>        resizeBuffers();<br>        ...<br>        mSapPostUpdateWorkTask.setContinuation(continuation);<br>        mSapUpdateWorkTask.setContinuation(&amp;mSapPostUpdateWorkTask);<br>        mSapPostUpdateWorkTask.removeReference();<br>        mSapUpdateWorkTask.removeReference();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>Task
+链：<code>SapUpdateWorkTask → SapPostUpdateWorkTask → continuation</code>，前者内部串行调用：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs 678:694:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseSap.cpp">void BroadPhaseSap::update(PxBaseTask* continuation)<br>&#123;<br>    ...<br>    batchRemove();<br>    ...<br>    mBatchUpdateTasks[0].runInternal();<br>    mBatchUpdateTasks[1].runInternal();<br>    mBatchUpdateTasks[2].runInternal();<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>虽然这里写的是顺序 <code>runInternal</code>，但每个
+<code>BroadPhaseBatchUpdateWorkTask</code> 是<strong>独立
+Task</strong>，理论上可以并行（每个轴只读其他两个轴的
+<code>SapBox1D</code>，写自己轴的端点表与自己 task 的 pair 数组），后续
+<code>postUpdate</code> 把 3 个轴产生的 pair 合并。</p>
+<h4 id="step-1batchremove删除对象">Step
+1：<code>batchRemove</code>（删除对象）</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs 860:958:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseSap.cpp">void BroadPhaseSap::batchRemove()<br>&#123;<br>    ...<br>    for(PxU32 Axis=0;Axis&lt;3;Axis++)<br>    &#123;<br>        ...<br>        for(PxU32 i=0;i&lt;mRemovedSize;i++)<br>        &#123;<br>            ...<br>            BaseEPData[MinIndex] = PX_REMOVED_BP_HANDLE;<br>            BaseEPData[MaxIndex] = PX_REMOVED_BP_HANDLE;<br>            ...<br>        &#125;<br>        // 从 MinMinIndex 起做一次&quot;原地压缩&quot;，去掉所有 PX_REMOVED_BP_HANDLE<br>        ...<br>    &#125;<br>    ...<br>    mPairs.RemovePairs(bitmap);<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>要点：把要删除对象的端点先打 sentinel 标记
+<code>PX_REMOVED_BP_HANDLE</code>，再做一次原地压缩；最后用 BitMap
+一次性扫一遍 <code>mPairs</code>，把涉及到删除 box 的所有 pair
+标记移除。</p>
+<h4 id="step-2batchupdate按轴并行批量更新">Step
+2：<code>batchUpdate</code>（按轴并行批量更新）</h4>
+<p><code>batchUpdate</code> 是 SAP
+的核心。<code>BroadPhaseSap::batchUpdate(axis, ...)</code>
+自适应分了两个分支：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs 987:999:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseSap.cpp">void BroadPhaseSap::batchUpdate<br>(const PxU32 Axis, BroadPhasePair*&amp; pairs, PxU32&amp; pairsSize, PxU32&amp; pairsCapacity)<br>&#123;<br>    if(mUpdatedSize == 0)<br>        return;<br><br>    //If number updated is sufficiently fewer than number of boxes (say less than 20%)<br>    if((mUpdatedSize*5) &lt; mBoxesSize)<br>    &#123;<br>        batchUpdateFewUpdates(Axis, pairs, pairsSize, pairsCapacity);<br>        return;<br>    &#125;<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>当 <code>updated &lt; 20%</code> 总数 →
+<code>batchUpdateFewUpdates</code>：先用 quicksort/bucket sort
+收集"只处理被更新的端点"的索引
+<code>mSortedUpdateElements</code>，然后只对这些位置做反向冒泡。</li>
+<li>否则 →
+<code>batchUpdate</code>：从左到右扫描整条端点表，当某端点对应 box
+在本帧被 update 或它<strong>正在与一个活跃 pocket 重叠</strong>时，走
+swap 逻辑。</li>
+</ul>
+<p>核心逻辑（节选）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><code class="hljs 1059:1158:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseSap.cpp">for(; !isSentinel(BaseEPDatas[ind]); ++ind)<br>&#123;<br>    BpHandle ThisData = BaseEPDatas[ind];<br>    const BpHandle handle = getOwner(ThisData);<br><br>    if(updated[handle] || wasUpdated)<br>    &#123;<br>        ...<br>        ValType ThisValue = startIsMax ? encodeMax(...) : encodeMin(...);<br>        BaseEPValues[ThisIndex] = ThisValue;<br>        ...<br>        BpHandle CurrentIndex = mListPrev[ThisIndex];<br>        ValType CurrentValue = BaseEPValues[CurrentIndex];<br><br>        if(CurrentValue &gt; ThisValue)<br>        &#123;<br>            ...<br>            if(!isMax(ThisData))<br>            &#123;<br>                // min 向左滑：每越过一个 max，就意味着可能 *新增* 一对 overlap<br>                do<br>                &#123;<br>                    BpHandle CurrentData = BaseEPDatas[CurrentIndex];<br>                    const BpHandle IsMax = isMax(CurrentData);<br>                    if(IsMax)<br>                    &#123;<br>                        const BpHandle ownerId=getOwner(CurrentData);<br>                        SapBox1D* PX_RESTRICT id1 = asapBoxes + ownerId;<br>                        // Our min passed a max =&gt; start overlap<br>                        if(<br>                            BaseEPValues[id1-&gt;mMinMax[0]] &lt; boxMax &amp;&amp; <br>                            Intersect2D_Handle(...)<br>                            &amp;&amp; (group!=asapBoxGroupIds[ownerId])<br>                            )<br>                        &#123;<br>                            ...<br>                            pairs[numPairs].mVolA=BpHandle(PxMax(handle, ownerId));<br>                            pairs[numPairs].mVolB=BpHandle(PxMin(handle, ownerId));<br>                            numPairs++;<br>                        &#125;<br>                    &#125;<br>                    ...<br>                &#125;<br>                while(ThisValue &lt; CurrentValue);<br>            &#125;           <br>            else <br>            &#123;<br>                // max 向左滑：每越过一个 min，可能 *移除* 一对 overlap（见同函数下方）<br>                ...<br>            &#125;<br>            ...<br>        &#125;<br>    &#125;<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>可以清楚看到 SAP 增量更新的灵魂： - <strong>min 向左越过某 max →
+该轴上原本不重叠的两个 box，现在在该轴重叠了</strong>（潜在 add pair）。
+- <strong>max 向左越过某 min → 该轴上原本重叠的两对
+box，现在分开了</strong>（潜在 remove pair）。 - 仅"该轴重叠"并不代表 3D
+重叠，因此还要调用 <code>Intersect2D_Handle</code> 在另外两个轴上做 2D
+重叠测试，得到的才是真正的候选 pair。 - pair 用
+<code>(min(a,b), max(a,b))</code>
+标准化方向：<code>mVolA&gt;mVolB</code> 表示 add，否则表示 remove（由
+<code>postUpdate</code> 中的判断 <code>if(volA &gt; volB)</code>
+区分）。 - <code>BroadPhaseActivityPocket</code> +
+<code>mListPrev/mListNext</code> 让链表式 swap 可以延迟到"pocket
+结束时再回写"，大幅降低了 swap 时的内存写量；最后 <code>pocket</code>
+段内做 in-place 收缩。</p>
+<h4 id="step-3batchcreate新增对象">Step
+3：<code>batchCreate</code>（新增对象）</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs 696:763:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseSap.cpp">void BroadPhaseSap::batchCreate()<br>&#123;<br>    if(!mCreatedSize)   return;<br>    ...<br>    for(PxU32 Axis=0;Axis&lt;3;Axis++)<br>    &#123;<br>        // 1) 给所有新 box 生成 min/max 端点数据<br>        ...<br>        // 2) 用 RadixSortBuffered 对新端点做基数排序<br>        const PxU32* Sorted = RS.Sort(keys, numEndPoints, Cm::RADIX_UNSIGNED).GetRanks();<br>        ...<br>        // 3) 把已排序的新端点合并进现有的全局端点数组<br>        InsertEndPoints(bufferValues, bufferDatas, numEndPoints, mEndPointValues[Axis], mEndPointDatas[Axis], 2*(mBoxesSize-mCreatedSize)+NUM_SENTINELS, mBoxEndPts[Axis]);<br>    &#125;<br>    ...<br>    const Gu::Axes axes(Gu::AXES_XYZ);<br>    performBoxPruning(axes);<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>新对象会触发一次"批量端点插入 + box
+pruning"。<code>performBoxPruning</code> 又拆成
+<code>New-New</code>（新创建之间）和 <code>New-Old</code>（新创建 vs
+之前已有），都使用了 1D sweep 的经典写法（见
+<code>BpBroadPhaseSapAux.cpp</code> 中的
+<code>performBoxPruningNewNew/NewOld</code>）。</p>
+<blockquote>
+<p>这也解释了官方注释中"large numbers of objects are added to or removed
+from the broad phase"会显著掉性能 —— 大批量创建意味着 3 个轴各做一次
+radix sort + merge insertion + box pruning，比纯增量更新昂贵得多。</p>
+</blockquote>
+<h4 id="step-4postupdate-把-3-个轴产生的候选合并为最终-addremove">Step
+4：<code>postUpdate</code> —— 把 3 个轴产生的"候选"合并为最终
+add/remove</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs 624:665:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseSap.cpp">void BroadPhaseSap::postUpdate(PxBaseTask* /*continuation*/)<br>&#123;<br>    ...<br>    for(PxU32 i=0;i&lt;3;i++)<br>    &#123;<br>        const PxU32 numPairs=mBatchUpdateTasks[i].getPairsSize();<br>        const BroadPhasePair* PX_RESTRICT pairs=mBatchUpdateTasks[i].getPairs();<br>        for(PxU32 j=0;j&lt;numPairs;j++)<br>        &#123;<br>            const BroadPhasePair&amp; pair=pairs[j];<br>            const BpHandle volA=pair.mVolA;<br>            const BpHandle volB=pair.mVolB;<br>            if(volA &gt; volB)<br>                AddPair(volA, volB, ...);<br>            else<br>                RemovePair(volA, volB, ...);<br>        &#125;<br>    &#125;<br><br>    batchCreate();<br><br>    ComputeCreatedDeletedPairsLists(<br>        mBoxGroups,<br>        mData,mDataSize,<br>        mScratchAllocator, <br>        mCreatedPairsArray,mCreatedPairsSize,mCreatedPairsCapacity,<br>        mDeletedPairsArray,mDeletedPairsSize,mDeletedPairsCapacity,<br>        mActualDeletedPairSize,<br>        mPairs);<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>最终通过 <code>SapPairManager</code>
+的状态位（<code>PAIR_INARRAY/PAIR_NEW/PAIR_REMOVED</code>）一次性扫出
+created/deleted pair 报告给上层。</p>
+<h3 id="复杂度">2.3 复杂度</h3>
+<ul>
+<li>单帧增量更新（少量移动）：单轴上的 swap 数与
+<code>endpoint 移动总距离 d</code> 成正比，整体接近 <strong>O(N + d +
+k)</strong>，k 为新增 / 删除 pair 数，这就是 SAP
+的"时间相干性"优势。</li>
+<li>全员移动（最坏）：单轴上每个端点的相对位置都可能改变，复杂度退化到
+O(N²) 量级（每次 swap 都要做 2D 重叠测试）。</li>
+<li>大批量插入：每轴 O((N + M) log M)（radix sort + merge insert），加上
+box pruning。</li>
+</ul>
+<hr />
+<h2 id="mbp-算法实现剖析">3. MBP 算法实现剖析</h2>
+<h3 id="数据结构-1">3.1 数据结构</h3>
+<p>MBP 是分层结构：<code>BroadPhaseMBP</code> → <code>MBP</code> →
+<code>Region</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs 482:556:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseMBP.cpp">// We have one of those for each Region within the MBP<br>struct RegionData : public Ps::UserAllocated<br>&#123;<br>    MBP_AABB    mBox;       // Volume of space controlled by this Region<br>    Region*     mBP;        // Pointer to Region itself<br>    Ps::IntBool mOverlap;   // True if overlaps other regions<br>    void*       mUserData;  // Region identifier, reused to contain &quot;first free ID&quot;<br>&#125;;<br><br>    #define MAX_NB_MBP  256<br><br>    class MBP : public Ps::UserAllocated<br>    &#123;<br>        ...<br>        PxU32                   mNbPairs;<br>        PxU32                   mNbRegions;<br>        MBP_ObjectIndex         mFirstFreeIndex;    // First free recycled index for mMBP_Objects<br>        PxU32                   mFirstFreeIndexBP;  // First free recycled index for mRegions<br>        Ps::Array&lt;RegionData&gt;   mRegions;<br>        Ps::Array&lt;MBP_Object&gt;   mMBP_Objects;<br>        MBP_PairManager         mPairManager;<br><br>        BitArray                mUpdatedObjects;    // Indexed by MBP_ObjectIndex<br>        BitArray                mRemoved;           // Indexed by MBP_ObjectIndex<br>        Ps::Array&lt;PxU32&gt;        mHandles[MAX_NB_MBP+1];<br>        ...<br>#ifdef USE_FULLY_INSIDE_FLAG<br>        BitArray                mFullyInsideBitmap; // Indexed by MBP_ObjectIndex<br>#endif<br>        ...<br>    &#125;;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>每个 <code>Region</code> 是一段"封装的 1D Sweep-Like" 小型
+BP，内部维护<strong>自己</strong>的
+<code>mStaticBoxes/mDynamicBoxes</code>（按 minX 排序的 AABB
+列表）。</li>
+<li>一个对象可以同时归属多个 Region（<code>MBP_Object::mNbHandles</code>
+记录归属数），这是 MBP 跨 Region 边界检测重叠的核心机制。</li>
+<li>全局只共享一个
+<code>MBP_PairManager</code>，所以<strong>同一对物体跨多个 Region
+重叠也只会产生一条 pair</strong>（hash 表自动去重）。</li>
+<li><code>mFullyInsideBitmap</code>
+是优化：若一个对象<strong>完全</strong>落在它所归属的全部 Region
+之内，那么新加 Region 时无需测试这个对象；新加 Region 时只遍历"不在
+fully-inside 集合中"的对象（详见 <code>populateNewRegion</code>
+的位扫描实现）。</li>
+</ul>
+<p><code>Region</code> 自身的关键字段：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs 450:479:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseMBP.cpp">//      private:<br>        BoxPruning_Input    PX_ALIGN(16, mInput);<br>        PxU32               mNbObjects;<br>        PxU32               mMaxNbObjects;<br>        PxU32               mFirstFree;<br>        MBPEntry*           mObjects;<br>        PxU32               mMaxNbStaticBoxes;<br>        PxU32               mNbStaticBoxes;<br>        PxU32               mMaxNbDynamicBoxes;<br>        PxU32               mNbDynamicBoxes;<br>        MBP_AABB*           mStaticBoxes;<br>        MBP_AABB*           mDynamicBoxes;<br>        MBP_Mapping         mInToOut_Static;    // Maps static boxes to mObjects<br>        MBP_Mapping         mInToOut_Dynamic;   // Maps dynamic boxes to mObjects<br>        PxU32*              mPosList;<br>        PxU32               mNbUpdatedBoxes;<br>        PxU32               mPrevNbUpdatedBoxes;<br>        BitArray            mStaticBits;<br>        RadixSortBuffered   mRS;<br>        bool                mNeedsSorting;<br>        bool                mNeedsSortingSleeping;<br>        MBPOS_TmpBuffers    mTmpBuffers;<br></code></pre></td></tr></table></figure>
+<p>注意：MBP 把 dynamic 数组里"被更新"的对象通过
+<strong>MTF（move-to-front）</strong> 移到前
+<code>mNbUpdatedBoxes</code> 个位置（见 <code>MTF()</code>
+函数），帧之间不需要 sort 静态/睡眠对象。</p>
+<h3 id="一帧的执行流程-1">3.2 一帧的执行流程</h3>
+<p>入口：<code>BroadPhaseMBP::update(...)</code>，同样基于 task：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs 3495:3520:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseMBP.cpp">void BroadPhaseMBP::update(const PxU32 numCpuTasks, PxcScratchAllocator* scratchAllocator, const BroadPhaseUpdateData&amp; updateData, physx::PxBaseTask* continuation, physx::PxBaseTask* narrowPhaseUnblockTask)<br>&#123;<br>    ...<br>    setUpdateData(updateData);<br>    ...<br>    mMBPPostUpdateWorkTask.setContinuation(continuation);<br>    mMBPUpdateWorkTask.setContinuation(&amp;mMBPPostUpdateWorkTask);<br>    mMBPPostUpdateWorkTask.removeReference();<br>    mMBPUpdateWorkTask.removeReference();<br>&#125;<br></code></pre></td></tr></table></figure>
+<p><code>setUpdateData</code> 在主线程内<strong>直接</strong>调用
+<code>removeObject / addObject / updateObject</code>，并最后调用
+<code>mMBP-&gt;prepareOverlapsMT()</code>（每个 Region 各自
+<code>staticSort</code> + 后续每帧的 <code>preparePruning</code>
+是在工作 task 内通过 <code>findOverlapsMT</code> 上下文里准备的）。</p>
+<h4 id="step-1apply-removedcreatedupdated主线程setupdatedata">Step
+1：apply
+removed/created/updated（主线程，<code>setUpdateData</code>）</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs 3545:3654:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseMBP.cpp">const BpHandle* removed = updateData.getRemovedHandles();<br>if(removed)<br>&#123;<br>    ...<br>    const bool status = mMBP-&gt;removeObject(mMapping[index]);<br>    ...<br>&#125;<br><br>const BpHandle* created = updateData.getCreatedHandles();<br>if(created)<br>&#123;<br>    ...<br>    IntegerAABB bounds(boundsXYZ[index], updateData.getContactDistance()[index]);<br>    MBP_AABB aabb;<br>    aabb.mMinX  = bounds.mMinMax[IntegerAABB::MIN_X]&gt;&gt;1;<br>    ...<br>    const MBP_Handle mbpHandle = mMBP-&gt;addObject(aabb, index, isStatic);<br>    mMapping[index] = mbpHandle;<br>&#125;<br><br>const BpHandle* updated = updateData.getUpdatedHandles();<br>if(updated)<br>&#123;<br>    ...<br>    const bool status = mMBP-&gt;updateObject(mMapping[index], aabb);<br>    ...<br>&#125;<br>...<br>mMBP-&gt;prepareOverlapsMT();<br></code></pre></td></tr></table></figure>
+<p><code>MBP::addObject</code> 会逐个 Region 测试新 AABB 与 region box
+的相交，把 box 加入所有相交
+region（<code>region-&gt;addObject</code>）。<code>MBP::updateObject</code>
+同理，但有"上一帧只在一个 region 且该 region 不与别人 overlap、且新 box
+仍完全在该 region 内"的快速路径，跳过遍历所有 region。</p>
+<h4 id="step-2每个-region-静态排序-准备数据prepareoverlapsmt">Step
+2：每个 Region 静态排序 /
+准备数据（<code>prepareOverlapsMT</code>）</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs 2110:2142:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseMBP.cpp">void Region::prepareOverlapsMT()<br>&#123;<br>    if(!mNbUpdatedBoxes &amp;&amp; !mNeedsSorting)<br>        return;<br><br>    if(mNeedsSorting)<br>    &#123;<br>        staticSort();<br>        // 当 static 端被改动后，下一帧需要把所有动态 box 也全部当作 updated，<br>        // 这样它们会在 BipartiteBoxPruning 中跟新静态盒子整体重测<br>        mNbUpdatedBoxes = mNbDynamicBoxes;<br>        ...<br>    &#125;<br><br>    preparePruning(mTmpBuffers);<br>    prepareBIPPruning(mTmpBuffers);<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>staticSort</code>：分两段—— 已经在排好序的静态 box 视为"sorted
+set"，新增/改动的静态 box 单独 radix
+sort，最后做<strong>双路合并排序</strong>写回。这样静态盒子绝大多数帧都只是
+O(N) 合并，没有重排序。</li>
+<li><code>preparePruning</code>：把"动态 box"分成 <em>updated</em>（前
+<code>mNbUpdatedBoxes</code> 个，由 MTF 维护在数组头）和
+<em>sleeping</em>（其余），各做一次 radix sort，得到
+<code>mInput</code>。</li>
+<li><code>prepareBIPPruning</code>：构造 <em>dynamic vs static</em> 的
+bipartite 输入 <code>mInput.mBIPInput</code>。</li>
+</ul>
+<h4 id="step-3实际-box-pruningfindoverlapsmt">Step 3：实际 box
+pruning（<code>findOverlapsMT</code>）</h4>
+<p>入口：<code>MBPUpdateWorkTask::runInternal → MBP::findOverlapsMT → Region::findOverlapsMT</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs 2164:2177:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseMBP.cpp">void Region::findOverlapsMT(MBP_PairManager&amp; pairManager, const BpHandle* PX_RESTRICT groups, const MBP_Object* PX_RESTRICT mbpObjects)<br>&#123;<br>    PX_ASSERT(!mNeedsSorting);<br>    if(!mNbUpdatedBoxes)<br>        return;<br><br>    if(mInput.mNeeded)<br>        doCompleteBoxPruning(&amp;pairManager, mInput, groups, mbpObjects);<br><br>    if(mInput.mBIPInput.mNeeded)<br>        doBipartiteBoxPruning(&amp;pairManager, mInput.mBIPInput, groups, mbpObjects);<br><br>    mNbUpdatedBoxes = 0;<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>doCompleteBoxPruning</code>：经典的"主轴 sweep + 限制 max
+范围扫描 + 2D 重叠测试"算法。<code>MBP_OVERLAP_TEST</code> 在启用
+<code>MBP_SIMD_OVERLAP</code> 时会扩展成一条 SSE 比较，可一次性完成 yz
+的重叠检验（见 <code>BpBroadPhaseMBPCommon.h</code> 的
+<code>SIMD_AABB</code> 布局：mMinX 与 mMaxX 相邻，便于 SSE 比较）。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs 1888:1932:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseMBP.cpp">    // Prune the list<br>    const PxU32 lastSortedIndex = nbUpdated;<br>    PxU32 sortedIndex = 0;<br>    PxU32 runningIndex = 0;<br>    while(runningIndex&lt;lastSortedIndex &amp;&amp; sortedIndex&lt;lastSortedIndex)<br>    &#123;<br>        const PxU32 index0 = sortedIndex++;<br>        const MBP_AABB&amp; box0 = updatedDynamicBoxes[index0];<br>        const PxU32 limit = box0.mMaxX;<br>        SIMD_OVERLAP_PRELOAD_BOX0<br>        const PxU32 l = box0.mMinX;<br>        while(updatedDynamicBoxes[runningIndex++].mMinX&lt;l);<br><br>        if(runningIndex&lt;lastSortedIndex)<br>        &#123;<br>            PxU32 index1 = runningIndex;<br>            while(updatedDynamicBoxes[index1].mMinX&lt;=limit)<br>            &#123;<br>                MBP_OVERLAP_TEST(updatedDynamicBoxes[index1])<br>                &#123;<br>                    outputPair_DynamicDynamic(...);<br>                &#125;<br>#ifdef TEST2<br>                ...<br>                index1+=2;<br>#else<br>                index1++;<br>#endif<br>            &#125;<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>doBipartiteBoxPruning</code>：dynamic ↔︎ static
+之间的两向扫描，结构对称（先 dynamic 推 static，再 static 推
+dynamic），尾部带 <code>MBP_USE_SENTINELS</code>
+哨兵以省掉边界判断。</li>
+<li><code>TWO_AT_A_TIME</code> 宏让 bipartite
+内部一次处理两个候选静态盒子，进一步利用指令级并行。</li>
+</ul>
+<p>新生成的 pair 通过 <code>MBP_PairManager::addPair</code> 写入：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs 664:720:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseMBP.cpp">MBP_Pair* MBP_PairManager::addPair(PxU32 id0, PxU32 id1, const BpHandle* PX_RESTRICT groups, const MBP_Object* objects)<br>&#123;<br>    ...<br>    if(groups)<br>    &#123;<br>        ...<br>        if(groups[object0] == groups[object1])<br>            return NULL;<br>    &#125;<br>    sort(id0, id1);<br>    const PxU32 fullHashValue = hash(id0, id1);<br>    PxU32 hashValue = fullHashValue &amp; mMask;<br>    &#123;<br>        MBP_Pair* PX_RESTRICT p = findPair(id0, id1, hashValue);<br>        if(p)<br>        &#123;<br>            p-&gt;isUpdated = true;<br>            return p;   // Persistent pair<br>        &#125;<br>    &#125;<br>    ...<br>    MBP_Pair* PX_RESTRICT p = &amp;mActivePairs[mNbActivePairs];<br>    p-&gt;id0      = id0;<br>    p-&gt;id1      = id1;<br>    p-&gt;isNew    = true;<br>    p-&gt;isUpdated= false;<br>    ...<br>    return p;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>注意：<strong>已存在的 pair 不会重复添加</strong>，只是
+<code>isUpdated = true</code>；<strong>全新的 pair</strong> 才打
+<code>isNew = true</code>。</p>
+<h4 id="step-4postupdate-finalize">Step
+4：<code>postUpdate → finalize</code></h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs 3680:3695:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseMBP.cpp">void BroadPhaseMBP::postUpdate(physx::PxBaseTask* /*continuation*/)<br>&#123;<br>#ifndef USE_SINGLE_THREADED_REFERENCE_CODE<br>    &#123;<br>        PxU32 Nb = mMBP-&gt;mNbRegions;<br>        const RegionData* PX_RESTRICT regions = mMBP-&gt;mRegions.begin();<br>        for(PxU32 i=0;i&lt;Nb;i++)<br>        &#123;<br>            if(regions[i].mBP)<br>                regions[i].mBP-&gt;mNbUpdatedBoxes = 0;<br>        &#125;<br>    &#125;<br>    mMBP-&gt;finalize(this);<br>#endif<br>&#125;<br></code></pre></td></tr></table></figure>
+<p><code>MBP::finalize → MBP_PairManager::removeMarkedPairs</code>
+一次扫过 <code>mActivePairs</code>，根据： - <code>isNew==true</code> →
+输出到 <code>mCreated</code>； -
+<code>isUpdated==false &amp;&amp; (任意一端涉及 updated/removed)</code>
+→ 输出到 <code>mDeleted</code> 并物理移除该 pair； - 其余视为持续存在的
+pair。</p>
+<p>这也解释了 MBP
+为什么"对全员同时运动也不会爆炸"：它本质是<strong>每帧重算几何</strong>，时间相干性只用来快速识别
+add/remove 报告，几何复杂度不被 swap 数主导。</p>
+<h3 id="复杂度-1">3.3 复杂度</h3>
+<ul>
+<li>单 region 内：<code>Complete Box Pruning</code> 经典复杂度大约
+<strong>O(N log N + K)</strong>，K 为该 region
+实际产生的候选对数；动态盒子较少的 region 几乎是 O(N)。</li>
+<li>多 region：N 个对象、R 个 region，时间 ≈
+<code>sum_r (n_r log n_r)</code> + 区域间通过对象多归属自动覆盖。Region
+之间天然并行（<code>Region::findOverlapsMT</code>）。</li>
+<li>大批量插入：O(M) 次 <code>addObject</code>，每个对象只对 region
+数（≤256）做相交测试，几乎与对象总数 N 无关。</li>
+<li>全员移动：所有动态 box 都进 <em>updated</em> 集合，等价于做一次完整
+box pruning，<strong>性能比 SAP 在同场景下稳定得多</strong>。</li>
+</ul>
+<hr />
+<h2 id="关键算法子模块对比">4. 关键算法子模块对比</h2>
+<table>
+
+<thead>
+<tr>
+<th>子模块</th>
+<th>SAP</th>
+<th>MBP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pair 存储</td>
+<td><code>SapPairManager</code>（开放寻址 hash +
+<code>Hash32Bits_1</code>）</td>
+<td><code>MBP_PairManager</code>（开放寻址 hash +
+<code>Ps::hash</code>）</td>
+</tr>
+<tr>
+<td>Pair 持久化</td>
+<td>上一帧 pair 直接保留，本帧只增/减 swap 触发的差量</td>
+<td>全部 pair 在 hash 表里跨帧持久存在，每帧打
+<code>isUpdated</code>，未被刷新的判为 lost</td>
+</tr>
+<tr>
+<td>增量识别新对</td>
+<td><code>mVolA &gt; mVolB</code> 表 add，反之表 remove；最后由
+<code>ComputeCreatedDeletedPairsLists</code> 汇总</td>
+<td><code>addPair</code> 返回时 <code>isNew=true</code>
+表新建；<code>removeMarkedPairs</code> 集中处理 lost pair</td>
+</tr>
+<tr>
+<td>排序</td>
+<td>增量保持有序 + 批量插入时 <code>Cm::RadixSortBuffered</code></td>
+<td>每帧对 <em>updated dynamic</em> 做 RadixSort；static 用 incremental
+"排序-合并"</td>
+</tr>
+<tr>
+<td>AABB 几何测试</td>
+<td>1D：值比较；2D：<code>Intersect2D_Handle</code>
+使用端点索引（依赖严格顺序）做无浮点比较</td>
+<td>1D：<code>mMinX&lt;=limit</code> sweep；2D：可选
+SIMD（<code>SIMD_OVERLAP_TEST</code>），布局
+<code>mMinX/mMaxX/mMinY/mMinZ/mMaxY/mMaxZ</code> 对 SSE 友好</td>
+</tr>
+<tr>
+<td>Group / 过滤</td>
+<td><code>BP_SAP_TEST_GROUP_ID_CREATEUPDATE</code>
+在内层循环就过滤同组</td>
+<td><code>MBP_PairManager::addPair</code>
+入口处过滤同组（<code>groups[object0]==groups[object1]</code>）</td>
+</tr>
+<tr>
+<td>出界处理</td>
+<td>没有"出界"概念</td>
+<td>不与任何 region 相交的对象进入
+<code>mOutOfBoundsObjects</code>，由上层报告</td>
+</tr>
+<tr>
+<td>Origin shift</td>
+<td><code>BroadPhaseSap::shiftOrigin</code> 逐端点
+<code>decode → shift → encode</code>，并修正排序失效（<code>testPostShiftOrder</code>）</td>
+<td><code>MBP::shiftOrigin</code> 直接对每个 region box 和每个 object
+box 重新 encode；下一帧自然重新做 box pruning</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="并行化策略">5. 并行化策略</h2>
+<h3 id="sap-的并行">5.1 SAP 的并行</h3>
+<p>SAP 把"按轴更新"封装为 3 个并行 Task：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs 214:214:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseSap.h">BroadPhaseBatchUpdateWorkTask mBatchUpdateTasks[3];<br></code></pre></td></tr></table></figure>
+<p>各 task 写自己的端点数组和 pair 缓冲；<code>postUpdate</code>
+串行合并 3 个 pair 数组到
+<code>SapPairManager</code>。<strong>并行度的上限只有 3</strong>。</p>
+<h3 id="mbp-的并行">5.2 MBP 的并行</h3>
+<p>MBP 的并行粒度是 region：每个 region 内部串行做 sweep，region
+之间天然独立（互不写对方的数组）。<code>MBP::findOverlapsMT</code>
+当前的实现是简单的 <code>for</code> 循环，但实际生产中通常把这层包成多个
+task 并发分发（在 PhysX 3.4 的代码里直接顺序调用，是因为 region 数量上限
+256，实际场景通常 16~64 个）。<strong>并行度的上限取决于 region
+数</strong>。</p>
+<blockquote>
+<p>这也是 MBP 在多核机器上比 SAP 更容易扩展的一个直接原因。</p>
+</blockquote>
+<hr />
+<h2 id="内存对比">6. 内存对比</h2>
+<table>
+
+<thead>
+<tr>
+<th>内存项</th>
+<th>SAP</th>
+<th>MBP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>每个 box 的常驻数据</td>
+<td>3 轴 × 1 个 <code>SapBox1D</code>（含 min/max 在端点表中的索引）+
+每端点 <code>ValType + BpHandle</code></td>
+<td><code>MBP_Object</code>（含归属 region 列表）+ 每个所属 region 内
+<code>MBP_AABB + MBP_Index</code>（6 × 32bit）</td>
+</tr>
+<tr>
+<td>排序/工作缓冲</td>
+<td>3 个轴各自的端点表（<code>2N + 2</code>）+
+<code>mListNext/mListPrev</code> 双向链表 +
+<code>mActivityPockets</code></td>
+<td>每个 region 内
+<code>mPosList</code>、<code>mTmpBuffers</code>（sleeping/updated SoA）
++ <code>mRS</code>（基数排序）</td>
+</tr>
+<tr>
+<td>跨帧持久 pair</td>
+<td><code>SapPairManager</code> 的 hash 表 + 状态位字节</td>
+<td><code>MBP_PairManager</code> 的 hash 表 + <code>MBP_Pair</code>
+数组（含 isNew/isUpdated）</td>
+</tr>
+<tr>
+<td>额外结构</td>
+<td>无 region 概念</td>
+<td><code>mFullyInsideBitmap</code>、<code>mUpdatedObjects</code>、<code>mRemoved</code>、<code>mOutOfBoundsObjects</code>、<code>MAX_NB_MBP=256</code>
+个 region 桶</td>
+</tr>
+</tbody>
+</table>
+<p>总体上： - <strong>SAP</strong>：内存几乎与对象数线性相关，没有
+region/overlap 元数据； - <strong>MBP</strong>：内存比 SAP 略大（多了
+region 桶、fully-inside 位图、跨 region
+重复挂载等），但常数项可控（region 数 ≤ 256）。</p>
+<hr />
+<h2 id="接口差异">7. 接口差异</h2>
+<h3 id="sap不实现-region-api">7.1 SAP（不实现 region API）</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs 118:131:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseSap.h">virtual PxBroadPhaseType::Enum      getType()                   const   &#123; return PxBroadPhaseType::eSAP;    &#125;<br>virtual void                        update(...);<br>virtual void                        fetchBroadPhaseResults(physx::PxBaseTask*) &#123;&#125;<br>virtual PxU32                       getNbCreatedPairs()     const       &#123; return mCreatedPairsSize;     &#125;<br>virtual BroadPhasePairReport*       getCreatedPairs()                   &#123; return mCreatedPairsArray;    &#125;<br>virtual PxU32                       getNbDeletedPairs()     const       &#123; return mDeletedPairsSize;     &#125;<br>virtual BroadPhasePairReport*       getDeletedPairs()                   &#123; return mDeletedPairsArray;    &#125;<br>virtual void                        resizeBuffers();<br>virtual void                        freeBuffers();<br>virtual void                        shiftOrigin(const PxVec3&amp; shift);<br></code></pre></td></tr></table></figure>
+<blockquote>
+<p>SAP 不重写
+<code>getNbRegions/addRegion/removeRegion</code>，因为根本不需要。</p>
+</blockquote>
+<h3 id="mbp额外实现-region-api">7.2 MBP（额外实现 region API）</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs 62:69:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseMBP.h">virtual bool                        getCaps(PxBroadPhaseCaps&amp; caps)                                                     const;<br>virtual PxU32                       getNbRegions()                                                                      const;<br>virtual PxU32                       getRegions(PxBroadPhaseRegionInfo* userBuffer, PxU32 bufferSize, PxU32 startIndex=0) const;<br>virtual PxU32                       addRegion(const PxBroadPhaseRegion&amp; region, bool populateRegion);<br>virtual bool                        removeRegion(PxU32 handle);<br>virtual PxU32                       getNbOutOfBoundsObjects()   const;<br>virtual const PxU32*                getOutOfBoundsObjects()     const;<br></code></pre></td></tr></table></figure>
+<p>并在 <code>BroadPhaseMBP::getCaps</code> 中明确声明
+<code>needsPredefinedBounds = true</code> 与
+<code>maxNbRegions = 256</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs 3423:3429:Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/LowLevelAABB/src/BpBroadPhaseMBP.cpp">bool BroadPhaseMBP::getCaps(PxBroadPhaseCaps&amp; caps) const<br>&#123;<br>    caps.maxNbRegions           = 256;<br>    caps.maxNbObjects           = 0;<br>    caps.needsPredefinedBounds  = true;<br>    return true;<br>&#125;<br></code></pre></td></tr></table></figure>
+<hr />
+<h2 id="适用场景与调优建议">8. 适用场景与调优建议</h2>
+<table>
+
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>大量物体绝大多数处于休眠</td>
+<td><strong>SAP</strong></td>
+<td>端点几乎不动，增量更新近 O(N)</td>
+</tr>
+<tr>
+<td>大型世界（无明显空间边界）</td>
+<td><strong>SAP</strong></td>
+<td>无须 region；MBP 在无边界场景里只能划一个超大区域，退化为单 region
+内部 box pruning</td>
+</tr>
+<tr>
+<td>大量同时移动的活动对象</td>
+<td><strong>MBP</strong></td>
+<td>SAP 的 swap 数随活动数 × 平均移动距离爆炸增长</td>
+</tr>
+<tr>
+<td>一帧内创建 / 销毁大量对象</td>
+<td><strong>MBP</strong></td>
+<td>SAP 的 <code>batchCreate</code> 需要 3 个轴各做一次 RadixSort +
+InsertEndPoints</td>
+</tr>
+<tr>
+<td>关卡可划分为规则块状区域（房间、街区、网格）</td>
+<td><strong>MBP</strong></td>
+<td>用 <code>PxBroadPhaseExt::createRegionsFromWorldBounds</code>
+一行代码生成；region 之间可并行</td>
+</tr>
+<tr>
+<td>多核 CPU 上希望宽相位线性扩展</td>
+<td><strong>MBP</strong></td>
+<td>并行粒度 = region 数；SAP 的并行粒度恒为 3</td>
+</tr>
+<tr>
+<td>角色控制器 / 大量动力学 ragdoll</td>
+<td><strong>MBP</strong></td>
+<td>同上</td>
+</tr>
+<tr>
+<td>不希望显式管理世界边界</td>
+<td><strong>SAP</strong></td>
+<td>MBP 强制 <code>needsPredefinedBounds=true</code></td>
+</tr>
+<tr>
+<td>内存紧张、世界稀疏</td>
+<td><strong>SAP</strong></td>
+<td>没有 region 桶 / fully-inside 位图等附加结构</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sap-使用建议">8.1 SAP 使用建议</h3>
+<ul>
+<li>避免一次性 <code>addActor</code> 巨量对象，分帧分批可以摊平
+<code>batchCreate</code> 开销。</li>
+<li>让物理 island
+尽量休眠（<code>PxRigidDynamic::setSleepThreshold</code> 等），SAP
+在休眠下接近免费。</li>
+<li>若必须批量重建场景，可考虑切到 MBP。</li>
+</ul>
+<h3 id="mbp-使用建议">8.2 MBP 使用建议</h3>
+<ul>
+<li>Region 不宜过细（hash 冲突、跨 region 对象增多）也不宜过粗（单
+region 内退化为整体 sweep）。官方注释提到的 4×4 区域是经验值。</li>
+<li>让动态对象尽量只属于一个 region：跨 region 对象会被 <em>每个</em>
+region 处理，多归属带来重复工作（但靠 hash 去重最终 pair
+只有一条）。</li>
+<li>借助 <code>PxBroadPhaseExt::createRegionsFromWorldBounds</code>
+快速生成均匀 region 网格；运行时可热插拔
+region（<code>addRegion/removeRegion</code>）。</li>
+<li>对象若长期落在 region 内部不出边界，会自动进入
+<code>mFullyInsideBitmap</code>，新 region
+加入时不会被重测，几乎零开销。</li>
+</ul>
+<h2 id="总结">9. 总结</h2>
+<ul>
+<li><strong>SAP</strong>
+适合"少量东西在动、世界规模不可预知"的场景；优点是无 region
+配置、休眠效率极高，缺点是<strong>全员同时大量运动 /
+大批量增删</strong>时复杂度恶化、可并行度只有 3。</li>
+<li><strong>MBP</strong>
+适合"大量东西同时动、世界规模和边界相对清晰、需要多核扩展"的场景；优点是<strong>每帧重算几何</strong>对运动量不敏感、region
+间天然可并行，缺点是必须显式定义 region 且 region
+划分的好坏直接影响性能与内存。</li>
+</ul>
+<p>两者通过统一的 <code>BroadPhase</code>
+接口（<code>BroadPhase::create</code> 工厂方法）暴露给上层
+<code>BpSimpleAABBManager</code>，因此切换时业务代码只需要修改
+<code>PxSceneDesc::broadPhaseType</code> 一处即可。</p>
 
                 
               </div>
